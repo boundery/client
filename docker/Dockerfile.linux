@@ -1,0 +1,24 @@
+FROM debian:stretch-slim
+
+ARG UID
+ARG GID
+
+RUN    apt-get update \
+    && apt-get install --no-install-recommends -y \
+        python3-pip python3-wheel python3-setuptools python3-dev \
+        pkg-config git build-essential \
+        python3-gi \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN    pip3 install briefcase
+
+#Create a user to map the host user to.
+RUN    groupadd -o -g ${GID} build \
+    && useradd -m -o -u ${UID} -g ${GID} -s /bin/bash build
+USER build
+ENV HOME /home/build
+ENV USER build
+WORKDIR /home/build
+
+
+CMD [ "/bin/bash" ]
