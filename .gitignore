@@ -59,6 +59,9 @@ var/
 
 #Dockerfile related noise
 .bash_history
+.cache
+.cookiecutters
+.briefcase
 
 # Briefcase build directories
 iOS/
