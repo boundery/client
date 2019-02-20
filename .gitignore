@@ -70,3 +70,9 @@ windows/
 android/
 linux/
 django/
+
+# Docker android build related noise
+.android
+.cookiecutter_replay
+.cache
+.gradle
