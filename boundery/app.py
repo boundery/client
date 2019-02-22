@@ -8,10 +8,11 @@ from threading import Thread
 #    we don't know if a port can be bound until we're deep in run, and thus
 #    can't run our own code...
 
-#XXX Need some way to pull in other files with @route decorators.
-
 POLL_INTERVAL = 0.5
 PORT = 1337
+
+#Pull in the various routes.
+import enroll
 
 @route('/static/<filename:path>')
 def send_static(filename):
