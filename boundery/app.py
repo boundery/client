@@ -1,7 +1,7 @@
-import sys, time
+import sys, time, os
 import requests
 import webbrowser
-from bottle import route, run
+from bottle import route, run, static_file
 from threading import Thread
 
 #XXX Try random ports until one works.  Bottle doesn't make this easy, since
@@ -11,16 +11,22 @@ from threading import Thread
 #XXX Need some way to pull in other files with @route decorators.
 
 POLL_INTERVAL = 0.5
-PORT=1337
+PORT = 1337
+
+@route('/static/<filename:path>')
+def send_static(filename):
+    return static_file(filename,
+                       root=os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                         'static'))
 
 @route('/server_ok')
-def root():
+def server_ok():
     return "ok"
 
 def poll_ready():
     while True:
         try:
-            r = requests.get("http://localhost:8080/server_ok")
+            r = requests.get("http://localhost:%s/server_ok" % PORT)
             r.close()
             if r.status_code == 200:
                 break
