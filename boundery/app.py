@@ -1,56 +1,35 @@
-import toga
-from toga.style import Pack
-from toga.style.pack import COLUMN, ROW, LEFT, RIGHT
+import sys, time
+import requests
+import webbrowser
+from bottle import route, run
+from threading import Thread
 
-class BounderyMeClient(toga.App):
-    def startup(self):
-        self.main_window = toga.MainWindow(title=self.name)
+#XXX Try random ports until one works.
 
-        f_box = toga.Box()
-        c_box = toga.Box()
-        box = toga.Box()
+#XXX Need some way to pull in other files with @route decorators.
 
-        self.c_input = toga.TextInput(readonly = True)
-        self.f_input = toga.TextInput()
+POLL_INTERVAL = 0.5
 
-        self.c_label = toga.Label('Celcius', style=Pack(text_align=LEFT))
-        self.f_label = toga.Label('Fahrenheit', style=Pack(text_align=LEFT))
-        self.join_label = toga.Label('Is equivalent to', style=Pack(text_align=RIGHT))
+@route('/server_ok')
+def root():
+    return "ok"
 
-        button = toga.Button('Calculate', on_press=self.calculate)
-
-        f_box.add(self.f_input)
-        f_box.add(self.f_label)
-
-        c_box.add(self.join_label)
-        c_box.add(self.c_input)
-        c_box.add(self.c_label)
-
-        box.add(f_box)
-        box.add(c_box)
-        box.add(button)
-
-        box.style.update(direction=COLUMN, padding_top=10)
-        f_box.style.update(direction=ROW, padding=5)
-        c_box.style.update(direction=ROW, padding=5)
-
-        self.c_input.style.update(flex=1)
-        self.f_input.style.update(flex=1, padding_left=160)
-        self.c_label.style.update(width=100, padding_left=10)
-        self.f_label.style.update(width=100, padding_left=10)
-        self.join_label.style.update(width=150, padding_right=10)
-
-        button.style.update(flex=1, padding=15)
-
-        self.main_window.content = box
-        self.main_window.show()
-
-    def calculate(self, widget):
+def poll_ready():
+    while True:
         try:
-            self.c_input.value = (float(self.f_input.value) - 32.0) * 5.0 / 9.0
-        except Exception:
-            self.c_input.value = '???'
+            r = requests.get("http://localhost:8080/server_ok")
+            r.close()
+            if r.status_code == 200:
+                break
+        except:
+            pass
+        time.sleep(POLL_INTERVAL)
+    webbrowser.open("http://localhost:8080/")
 
-def main():
-    return BounderyMeClient('Boundery.me Client', 'me.boundery.boundery')
+poller = Thread(target=poll_ready, name="poll_ready", daemon=True)
+poller.start()
 
+if "--debug" in sys.argv:
+    run(host="localhost", port=8080, debug=True)
+else:
+    run(host='0.0.0.0', port=8080, debug=False, server='waitress')
