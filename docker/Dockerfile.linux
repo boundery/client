@@ -20,7 +20,7 @@ RUN    groupadd -o -g ${GID} build \
 USER build
 ENV HOME /home/build
 ENV USER build
-WORKDIR /home/build
+WORKDIR /home/build/src
 
 
 CMD [ "/bin/bash" ]
