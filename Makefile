@@ -17,3 +17,6 @@ android:
 	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-android \
 	  /bin/sh -c "python3 setup.py android && python3 setup.py android --build"
 
+.PHONY: dev
+dev:
+	@python3 boundery/app.py --debug
