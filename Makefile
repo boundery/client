@@ -19,4 +19,4 @@ android:
 
 .PHONY: dev
 dev:
-	@python3 boundery/app.py --debug
+	@python3 boundery/app.py --debug --local
