@@ -3,7 +3,6 @@
 <div id="results"><p style="color:orange">Waiting for home server to register itself.</p></div>
 <div id="storelink"></div>
 
-%#XXX Need to detect if Javascript is off, and warn appropriately
 <script type="text/javascript">
   function poll1() {
     var xhr = new XMLHttpRequest();

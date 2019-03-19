@@ -9,6 +9,8 @@ def get_mounts():
             (dev, mnt, fs, opts, dummy, dummy) = line.split(maxsplit=6)
             if mnt == "/" or mnt.startswith("/boot") or mnt.startswith("/run/user"):
                 continue
+            if not os.access(mnt, os.W_OK):
+                continue
             ret.append(mnt)
     return ret
 
