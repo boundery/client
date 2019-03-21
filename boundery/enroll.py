@@ -109,7 +109,7 @@ def step1_post():
     return template("step1_post")
 
 def step1_handler(ssid, wifi_pw, mount):
-    #XXX More granular progress than just per-file.
+    #XXX More granular progress than just per-file.  Monkeypatch shutil.copyfileobj?
     r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
     bio = io.BytesIO()
     zip_length = r.headers.get('content-length')
