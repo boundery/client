@@ -21,7 +21,7 @@ privsub = None
 def do_priv(cmd):
     global privsub
     if not privsub:
-        #XXX Handle wrong password here!
+        #XXX Handle cancelled sudo here.
         import __main__
         privsub = osal.sudo(sys.executable, os.path.abspath(__main__.__file__), "--privsub")
         line = privsub.stdout.readline().strip() #XXX timeout?
@@ -103,7 +103,7 @@ def step1_post():
                                             "wifi_pw": request.forms.get("wifi_pw"),
                                              "mount": mount })
     step1_thread.cur = 0
-    step1_thread.max = 100
+    step1_thread.max = 103
     step1_thread.start()
 
     return template("step1_post")
@@ -111,14 +111,27 @@ def step1_post():
 def step1_handler(ssid, wifi_pw, mount):
     #XXX More granular progress than just per-file.
     r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
-    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+    bio = io.BytesIO()
+    zip_length = r.headers.get('content-length')
+    if zip_length is None:
+        bio.write(r.content)
+        step1_thread.cur = 50
+    else:
+        zip_length = int(zip_length)
+        bytes_written = 0
+        for chunk in r.iter_content(64*1024):
+            bytes_written += len(chunk)
+            bio.write(chunk)
+            step1_thread.cur = (bytes_written / zip_length) * 50
+
+    with zipfile.ZipFile(bio) as zf:
         zis = zf.infolist()
         num_bytes = reduce(add, [ zi.file_size for zi in zis ])
         bytes_written = 0
         for zi in zis:
             zf.extract(zi, path=mount)
             bytes_written += zi.file_size
-            step1_thread.cur = (bytes_written / num_bytes) * 97
+            step1_thread.cur = 50 + (bytes_written / num_bytes) * 50
     r.close()
 
     with open(os.path.join(mount, "pairingkey"), 'wb') as f:
@@ -149,7 +162,7 @@ def step1_api2():
     global step1_thread
     if step1_thread.cur == step1_thread.max:
         step1_thread.join()
-    return { 'cur': step1_thread.cur, 'max': step1_thread.max }
+    return { 'cur': int(step1_thread.cur), 'max': step1_thread.max }
 
 @get('/step2')
 def step2():
