@@ -1,7 +1,10 @@
 from bottle import get, post, template, request, response, redirect, abort
 import requests
-import os, sys, time, json, atexit, socket, zipfile
+import os, sys, time, json, atexit, socket, zipfile, io
 from base64 import standard_b64encode, standard_b64decode
+from threading import Thread
+from functools import reduce
+from operator import add
 from libnacl.secret import SecretBox
 import libnacl
 import libnacl.utils
@@ -11,6 +14,7 @@ from settings import CENTRAL_URL
 
 #XXX Make sure this is restartable at any point, in case the client
 #    crashes/is shutdown/reloads HTML/etc.
+#XXX Stale tabs sticking around keep polling w/ javascript, maybe APIKEY or something?
 
 #These globals require either a threaded WSGI server, serial, or asyncio one.
 privsub = None
@@ -86,33 +90,66 @@ def step1():
 def step1_api1():
     return template("step1_api1", { "mounts": osal.get_mounts() })
 
+step1_thread = None
 @post('/step1')
 def step1_post():
     mount = request.forms.get('mount')
     if mount not in osal.get_mounts():
         raise Exception("Bad mountpoint from client!")
 
-    with zipfile.ZipFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                          "rpi3.zip")) as zf:
-        zf.extractall(path=mount)
+    global step1_thread
+    step1_thread = Thread(target=step1_handler, name="step1_thread",
+                              kwargs = { "ssid": request.forms.get("ssid").strip(),
+                                            "wifi_pw": request.forms.get("wifi_pw"),
+                                             "mount": mount })
+    step1_thread.cur = 0
+    step1_thread.max = 100
+    step1_thread.start()
+
+    return template("step1_post")
+
+def step1_handler(ssid, wifi_pw, mount):
+    #XXX More granular progress than just per-file.
+    r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
+    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+        zis = zf.infolist()
+        num_bytes = reduce(add, [ zi.file_size for zi in zis ])
+        bytes_written = 0
+        for zi in zis:
+            zf.extract(zi, path=mount)
+            bytes_written += zi.file_size
+            step1_thread.cur = (bytes_written / num_bytes) * 97
+    r.close()
 
     with open(os.path.join(mount, "pairingkey"), 'wb') as f:
         get_subkey("throwaway") #Make sure the key is loaded.
         f.write(standard_b64decode(get_from_datadir("pairingkey")))
+    step1_thread.cur += 1
 
-    with open(os.path.join(mount, "wifi.txt"), 'w') as f:
-        #XXX Verify that no-pw wifi networks work.
-        f.write("%s\n%s\n" % (request.forms.get('ssid'),
-                                  request.forms.get('wifi_pw')))
+    if len(ssid) > 0:
+        with open(os.path.join(mount, "wifi.txt"), 'w') as f:
+            #XXX Verify that no-pw wifi networks work.
+            f.write("%s\n%s\n" % (ssid, wifi_pw))
+    else:
+        try:
+            os.remove(os.path.join(mount, "wifi.txt"))
+        except FileNotFoundError:
+            pass
+    step1_thread.cur += 1
 
     try:
         os.remove(os.path.join(mount, "apikey"))
     except FileNotFoundError:
         pass
+    step1_thread.cur += 1
 
-    #XXX Tell the user to safely eject the SD card, then put it in the pi and boot.
-    #XXX Progress.
-    return redirect("/step2")
+
+@get('/step1_api2')
+def step1_api2():
+    global step1_thread
+    if step1_thread.cur == step1_thread.max:
+        step1_thread.join()
+    return { 'cur': step1_thread.cur, 'max': step1_thread.max }
 
 @get('/step2')
 def step2():
