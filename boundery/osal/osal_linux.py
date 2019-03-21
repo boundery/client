@@ -7,6 +7,10 @@ def get_mounts():
             if not line.startswith("/dev/"):
                 continue
             (dev, mnt, fs, opts, dummy, dummy) = line.split(maxsplit=6)
+            if fs != 'vfat':
+                continue
+            mnt = mnt.replace('\\040', ' ').replace('\\011', '\t')
+            mnt = mnt.replace('\\134', '\\').replace('\\012', '\n')
             if mnt == "/" or mnt.startswith("/boot") or mnt.startswith("/run/user"):
                 continue
             if not os.access(mnt, os.W_OK):
