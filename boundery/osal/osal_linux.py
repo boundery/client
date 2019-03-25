@@ -38,3 +38,16 @@ def get_data_dir(name):
 
 def get_zerotier_token_path():
     return "/var/lib/zerotier-one/authtoken.secret"
+
+def get_ssids():
+    p = subprocess.run(["nmcli", "-t", "-f", "mode,active,signal,ssid", "dev", "wifi"],
+                           stdout=subprocess.PIPE, universal_newlines=True)
+    ssids = []
+    for ssid in p.stdout.split():
+        ssid = ssid.split(':', 3)
+        if ssid[0] != "Infra":
+            continue
+        ssids.append(ssid[1:])
+    ssids = [ (i[0] == 'yes', int(i[1]), i[2]) for i in ssids ]
+    ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
+    return ssids

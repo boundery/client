@@ -54,6 +54,15 @@
        between the labels and their text fields */
     margin-left: .5em;
   }
+
+
+  .hideshow {
+    display: none; _
+  }
+  input[type="radio"]:checked + .hideshow  {
+    display: inline-block;
+  }
+}
 </style>
 
 <p>Choose Wifi settings, then choose the device to use to create the boot card.</p>
@@ -61,12 +70,25 @@
 <form action="/step1" method="post">
   <div>
     <label for="ssid">Wifi Network Name (SSID):</label>
-    <input type="text" name="ssid" value="">
+    <br>
+    % for ssid in ssids:
+    % if ssid[2]:
+    <input type="radio" name="ssid" value="={{ssid[1]}}" checked="checked">{{ssid[0]}}<br>
+    % else:
+    <input type="radio" name="ssid" value="={{ssid[1]}}">{{ssid[0]}}<br>
+    % end
+    % end
+    <div>
+      <input type="radio" name="ssid" value="other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
+    </div>
+    <input type="radio" name="ssid" value="">None. I'm using wired ethernet.
   </div>
   <div>
     <label for="wifi_pw">Wifi Password (Blank for none):</label>
     <input type="text" name="wifi_pw" value="">
   </div>
+  <br>
+  <hr>
   <br>
   <div id="mountlist">{{!mountlist}}</div>
 </form>

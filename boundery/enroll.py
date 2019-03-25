@@ -84,7 +84,9 @@ network_id = None
 @get('/')
 @get('/step1')
 def step1():
-    return template("step1", { "mountlist": step1_api1() })
+    ssids = osal.get_ssids()
+    ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
+    return template("step1", { "mountlist": step1_api1(), "ssids": ssids })
 
 @get('/step1_api1')
 def step1_api1():
@@ -97,9 +99,15 @@ def step1_post():
     if mount not in osal.get_mounts():
         raise Exception("Bad mountpoint from client!")
 
+    ssid = request.forms.get("ssid").strip()
+    if ssid == "other":
+        ssid = request.forms.get("other_ssid").strip()
+    else:
+        ssid = ssid[1:]
+
     global step1_thread
     step1_thread = Thread(target=step1_handler, name="step1_thread",
-                              kwargs = { "ssid": request.forms.get("ssid").strip(),
+                              kwargs = { "ssid": ssid,
                                             "wifi_pw": request.forms.get("wifi_pw"),
                                              "mount": mount })
     step1_thread.cur = 0
