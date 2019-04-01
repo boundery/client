@@ -1,6 +1,6 @@
-from bottle import get, post, template, request, response, redirect, abort
+from bottle import get, post, template, request, abort
 import requests
-import os, sys, time, json, atexit, socket, zipfile, io
+import os, sys, json, atexit, socket, zipfile, io
 from base64 import standard_b64encode, standard_b64decode
 from threading import Thread
 from functools import reduce
