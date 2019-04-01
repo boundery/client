@@ -28,7 +28,7 @@ def sudo(cmd, *args):
 def get_data_dir(name):
     xdg = os.environ.get("XDG_DATA_HOME", None)
     if xdg and os.path.isdir(xdg):
-        datadir = os.path.join(d, name)
+        datadir = os.path.join(xdg, name)
     elif os.path.isdir(os.path.expanduser("~/.local/share")):
         datadir = os.path.join(os.path.expanduser("~/.local/share"), name)
     else:
