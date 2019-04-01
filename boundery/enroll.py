@@ -199,8 +199,6 @@ def step3():
 
 @get('/step4')
 def step4():
-    #XXX This pops up an auth dialog without warning.  Should explain what is
-    #    about to happen, then have the user click "go".
     do_priv("join ff05390539000000")
     return template("step4", central_url=CENTRAL_URL)
 
@@ -224,19 +222,22 @@ def step4_api2():
     to_server_key = get_subkey("to_server", hkdf_salt)
     ciphertext = SecretBox(to_server_key).encrypt(nodeid.encode())
 
-    with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
-        s.settimeout(5)
-        s.connect((bootstrap_ipv6, 1337))
+    try:
+        with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as s:
+            s.settimeout(5)
+            s.connect((bootstrap_ipv6, 1337))
 
-        assert(len(hkdf_salt) < 256)
-        s.sendall(len(hkdf_salt).to_bytes(1, byteorder='big') + hkdf_salt)
-        assert(len(ciphertext) < 256)
-        s.sendall(len(ciphertext).to_bytes(1, byteorder='big') + ciphertext)
+            assert(len(hkdf_salt) < 256)
+            s.sendall(len(hkdf_salt).to_bytes(1, byteorder='big') + hkdf_salt)
+            assert(len(ciphertext) < 256)
+            s.sendall(len(ciphertext).to_bytes(1, byteorder='big') + ciphertext)
 
-        num_bytes = int.from_bytes(s.recv(1), byteorder='big')
-        resp=b''
-        while len(resp) < num_bytes:
-            resp += s.recv(num_bytes - len(resp))
+            num_bytes = int.from_bytes(s.recv(1), byteorder='big')
+            resp=b''
+            while len(resp) < num_bytes:
+                resp += s.recv(num_bytes - len(resp))
+    except (OSError, socket.timeout):
+        abort(404, "Not found")
 
     from_server_key = get_subkey("from_server", hkdf_salt)
     global network_id
