@@ -117,20 +117,25 @@ def step1_post():
     return template("step1_post")
 
 def step1_handler(ssid, wifi_pw, mount):
-    #XXX More granular progress than just per-file.  Monkeypatch shutil.copyfileobj?
-    r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
-    bio = io.BytesIO()
-    zip_length = r.headers.get('content-length')
-    if zip_length is None:
-        bio.write(r.content)
-        step1_thread.cur = 50
+    if "ZIPFILE" not in os.environ:
+        #XXX More granular progress than just per-file.  Monkeypatch shutil.copyfileobj?
+        r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
+        bio = io.BytesIO()
+        zip_length = r.headers.get('content-length')
+        if zip_length is None:
+            bio.write(r.content)
+            step1_thread.cur = 50
+        else:
+            zip_length = int(zip_length)
+            bytes_written = 0
+            for chunk in r.iter_content(64*1024):
+                bytes_written += len(chunk)
+                bio.write(chunk)
+                step1_thread.cur = (bytes_written / zip_length) * 50
     else:
-        zip_length = int(zip_length)
-        bytes_written = 0
-        for chunk in r.iter_content(64*1024):
-            bytes_written += len(chunk)
-            bio.write(chunk)
-            step1_thread.cur = (bytes_written / zip_length) * 50
+        bio = open(os.environ["ZIPFILE"], 'rb')
+        zip_length = os.path.getsize(os.environ["ZIPFILE"])
+        step1_thread.cur = 50
 
     with zipfile.ZipFile(bio) as zf:
         zis = zf.infolist()
@@ -140,7 +145,7 @@ def step1_handler(ssid, wifi_pw, mount):
             zf.extract(zi, path=mount)
             bytes_written += zi.file_size
             step1_thread.cur = 50 + (bytes_written / num_bytes) * 50
-    r.close()
+    bio.close()
 
     with open(os.path.join(mount, "pairingkey"), 'wb') as f:
         get_subkey("throwaway") #Make sure the key is loaded.
