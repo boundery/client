@@ -5,9 +5,12 @@ from base64 import standard_b64encode, standard_b64decode
 from threading import Thread
 from functools import reduce
 from operator import add
-from libnacl.secret import SecretBox
-import libnacl
-import libnacl.utils
+try:
+    from nacl.secret import SecretBox
+    from nacl.utils import random
+except ImportError:
+    from libnacl.secret import SecretBox
+    from libnacl import randombytes as random
 from hkdf import hkdf_extract, hkdf_expand
 import appdirs
 from boundery import osal
@@ -68,7 +71,7 @@ def save_to_datadir(name, val):
 def get_subkey(keyname, salt = None):
     b64_pairing_key = get_from_datadir("pairingkey")
     if b64_pairing_key is None:
-        pairing_key = libnacl.randombytes(32)
+        pairing_key = random(32)
         save_to_datadir("pairingkey",
                             standard_b64encode(pairing_key).decode('ascii'))
     else:
@@ -219,7 +222,7 @@ def step4_api1():
 
 @post('/step4_api2')
 def step4_api2():
-    hkdf_salt = libnacl.randombytes(32)
+    hkdf_salt = random(32)
     nodeid = do_priv("get_nodeid")
     to_server_key = get_subkey("to_server", hkdf_salt)
     ciphertext = SecretBox(to_server_key).encrypt(nodeid.encode())
