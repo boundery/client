@@ -1,0 +1,2 @@
+include boundery/templates/*
+include boundery/static/*

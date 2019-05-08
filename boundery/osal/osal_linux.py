@@ -25,20 +25,11 @@ def sudo(cmd, *args):
                                 stdin=subprocess.PIPE,
                                 bufsize=1, universal_newlines=True)
 
-def get_data_dir(name):
-    xdg = os.environ.get("XDG_DATA_HOME", None)
-    if xdg and os.path.isdir(xdg):
-        datadir = os.path.join(xdg, name)
-    elif os.path.isdir(os.path.expanduser("~/.local/share")):
-        datadir = os.path.join(os.path.expanduser("~/.local/share"), name)
-    else:
-        datadir = os.path.join(os.path.expanduser("~/.%s" % name))
-    os.makedirs(datadir, exist_ok=True)
-    return datadir
-
 def get_zerotier_token_path():
     return "/var/lib/zerotier-one/authtoken.secret"
 
+#XXX Support wicd.
+#XXX Fallback to talking to the card directly.
 def get_ssids():
     p = subprocess.run(["nmcli", "-t", "-f", "mode,active,signal,ssid", "dev", "wifi"],
                            stdout=subprocess.PIPE, universal_newlines=True)

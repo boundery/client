@@ -3,7 +3,7 @@ import requests
 import webbrowser
 from bottle import route, run, static_file, TEMPLATE_PATH
 from threading import Thread
-import settings
+from boundery import settings
 
 #XXX Add some APIKEY between browser and this server.
 #XXX Add JS to make it quit the deamon when all browser tabs/windows are closed.
@@ -18,7 +18,7 @@ if "--local" in sys.argv:
 DEBUG = "--debug" in sys.argv
 
 #Pull in the various routes.
-import enroll
+from boundery import enroll
 
 @route('/static/<filename:path>')
 def send_static(filename):
@@ -42,12 +42,13 @@ def poll_ready():
         time.sleep(POLL_INTERVAL)
     webbrowser.open("http://localhost:%s/" % settings.PORT)
 
-if "--privsub" in sys.argv:
-    enroll.privsub_run()
-else:
-    poller = Thread(target=poll_ready, name="poll_ready", daemon=True)
-    poller.start()
-    if DEBUG:
-        run(host="localhost", port=settings.PORT, debug=True)
+def main():
+    if "--privsub" in sys.argv:
+        enroll.privsub_run()
     else:
-        run(host="localhost", port=settings.PORT, debug=False, server='waitress')
+        poller = Thread(target=poll_ready, name="poll_ready", daemon=True)
+        poller.start()
+        if DEBUG:
+            run(host="localhost", port=settings.PORT, debug=True)
+        else:
+            run(host="localhost", port=settings.PORT, debug=False, server='waitress')

@@ -9,8 +9,9 @@ from libnacl.secret import SecretBox
 import libnacl
 import libnacl.utils
 from hkdf import hkdf_extract, hkdf_expand
-import osal
-from settings import CENTRAL_URL
+import appdirs
+from boundery import osal
+from boundery.settings import CENTRAL_URL
 
 #XXX Make sure this is restartable at any point, in case the client
 #    crashes/is shutdown/reloads HTML/etc.
@@ -51,14 +52,15 @@ datacache = {}
 def get_from_datadir(name):
     if not name in datacache:
         try:
-            datadir = osal.get_data_dir("boundery")
+            datadir = appdirs.user_data_dir("boundery")
             with open(os.path.join(datadir, name), 'r') as f:
                 datacache[name] = f.read().strip()
         except:
             datacache.pop(name, None)
     return datacache.get(name, None)
 def save_to_datadir(name, val):
-    datadir = osal.get_data_dir("boundery")
+    datadir = appdirs.user_data_dir("boundery")
+    os.makedirs(datadir, exist_ok=True)
     with open(os.path.join(datadir, name), 'w') as f:
         f.write(val)
     datacache[name] = val
