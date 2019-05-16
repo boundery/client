@@ -83,7 +83,7 @@
     <div>
       <input type="radio" name="ssid" value="other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
     </div>
-    <input type="radio" name="ssid" value="">None. I'm using wired ethernet.
+    <input type="radio" name="ssid" value="" required>None. I'm using wired ethernet.
   </div>
   <div>
     <label for="wifi_pw">Wifi Password (Blank for none):</label>
