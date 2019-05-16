@@ -65,7 +65,9 @@
 }
 </style>
 
-<p>Choose Wifi settings, then choose the device to use to create the boot card.</p>
+<h1>Choose Wifi settings, then choose the device to use to create the boot card.</h1>
+
+<p>If you are installing to a raspberry pi (or any other computer that doesn't support 5Ghz wifi), make sure to pick a 2.4Ghz Wifi network.</p>
 
 <form action="/step1" method="post">
   <div>
