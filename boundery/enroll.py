@@ -30,14 +30,14 @@ def do_priv(cmd):
         privsub = osal.sudo(sys.executable, os.path.abspath(__main__.__file__), "--privsub")
         line = privsub.stdout.readline().strip() #XXX timeout?
         if line != "ok":
-            raise Exception("privsub startup failed: " + line)
+            raise Exception("privsub startup failed: '%s'" % line)
 
     privsub.stdin.write(cmd + '\n')
     privsub.stdin.flush()
 
     line = privsub.stdout.readline().strip()
     if line.startswith("ERROR "):
-        raise Exception("privsub cmd %s failed: %s" % (cmd, line))
+        raise Exception("privsub cmd %s failed: '%s'" % (cmd, line))
     return line
 
 def finish_priv():
@@ -95,6 +95,7 @@ def step1():
 
 @get('/step1_api1')
 def step1_api1():
+    #XXX Emit a useful message if there are no mounts!
     return template("step1_api1", { "mounts": osal.get_mounts() })
 
 step1_thread = None
