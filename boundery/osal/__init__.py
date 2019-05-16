@@ -6,10 +6,9 @@ if os.name == "posix":
     else:
         from .osal_linux import *
 else:
-    #XXX Windows UAC (runas) doesn't hook up stdin/out. Named pipes?
-    assert(False)
+    from .osal_windows import *
 
-#netsh wlan show networks mode=bssid
-#https://stackoverflow.com/questions/130763/request-uac-elevation-from-within-a-python-script
+#XXX Get wifi password. Pypi has "ng" which claims to do so.
 
 #https://stackoverflow.com/questions/5747007/get-root-dialog-in-python-on-mac-os-x-windows/31984663#31984663
+#/Library/Application Support/ZeroTier/One/authtoken.secret

@@ -7,7 +7,7 @@ linux:
 	  -t boundery-client-linux -f ./docker/Dockerfile.linux ./docker
 	$(DOCKER) run -it --rm --user $$(id -u):$$(id -g) \
 	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-linux \
-	  python3 setup.py linux
+	  python3 setup.py linux --build
 
 #.PHONY: android
 #android:
@@ -17,10 +17,16 @@ linux:
 #	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-android \
 #	  /bin/sh -c "python3 setup.py android && python3 setup.py android --build"
 
+.PHONY: windows
+windows:
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) up
+	@while [ ! -f windows/buildcomplete ]; do sleep 1; done
+#	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) destroy -f
+
 .PHONY: dev
 dev:
 	@python3 boundery/app.py --debug --local
 
 .PHONY: check
 check:
-	pyflakes3 `find boundery -name '*.py' | grep -v osal/__init__.py`
+	pyflakes3 `find boundery -name '*.py' | grep -v osal/__init__[.]py | grep -v osal/win32wifi[.]py`

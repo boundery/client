@@ -1,12 +1,22 @@
 import sys, time, os
+
+#Something bottle does in run() blows up if sys.std* are None when bottle is imported.
+if '--privsub' not in sys.argv:
+    if sys.executable.upper().endswith("\\PYTHONW.EXE"):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+        sys.stdin = open(os.devnull, 'r')
+
 import requests
 import webbrowser
+import appdirs
 from bottle import route, run, static_file, TEMPLATE_PATH
+from collections import namedtuple
 from threading import Thread
 from boundery import settings
 
 #XXX Add some APIKEY between browser and this server.
-#XXX Add JS to make it quit the deamon when all browser tabs/windows are closed.
+#XXX Add JS to make it quit the deamon when all browser tabs/windows are closed.  Also, timeout.
 
 POLL_INTERVAL = 0.5
 
@@ -46,9 +56,17 @@ def main():
     if "--privsub" in sys.argv:
         enroll.privsub_run()
     else:
+        if sys.executable.upper().endswith("\\PYTHONW.EXE"):
+            sys.stdout = open(os.path.join(appdirs.user_data_dir("boundery"), "out.log"), 'w')
+            sys.stderr = open(os.path.join(appdirs.user_data_dir("boundery"), "err.log"), 'w')
+
         poller = Thread(target=poll_ready, name="poll_ready", daemon=True)
         poller.start()
+
         if DEBUG:
             run(host="localhost", port=settings.PORT, debug=True)
         else:
             run(host="localhost", port=settings.PORT, debug=False, server='waitress')
+
+    #briefcase expects main to return an object w/ a function on win32.
+    return namedtuple('Dummy', 'main_loop')(main_loop = lambda: None)
