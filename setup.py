@@ -38,7 +38,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     ],
     install_requires=[
-        'hkdf', 'PyNaCl', 'bottle', 'waitress', 'appdirs'
+        'requests', 'hkdf', 'PyNaCl', 'bottle', 'waitress', 'appdirs'
     ],
     options={
         'app': {
