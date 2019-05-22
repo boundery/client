@@ -1,4 +1,5 @@
 DOCKER=docker
+VAGRANT=vagrant
 
 .PHONY: linux
 linux: DOCKER_EXTRA=$(shell [ -L build ] && P=$$(readlink build) && echo -v $$P/:$$P )
@@ -19,9 +20,20 @@ linux:
 
 .PHONY: windows
 windows:
+	rm -rf windows
 	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) up
-	@while [ ! -f windows/buildcomplete ]; do sleep 1; done
-#	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) destroy -f
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) provision --provision-with build
+	while [ ! -f "windows/builddone" ]; do sleep 1; done
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) halt
+.PHONY: windows-gui
+windows-gui:
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant rdp -- /cert-ignore
+.PHONY: windows-halt
+windows-halt:
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant halt
+.PHONY: windows-destroy
+windows-destroy:
+	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant destroy -f
 
 .PHONY: dev
 dev:
