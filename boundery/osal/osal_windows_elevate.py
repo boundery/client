@@ -26,7 +26,7 @@ def pipe_client():
             print("Starting: '%s' -- '%s'" % (cmdargs, sys.path), file=out, flush=True)
             stdin = open(msvcrt.open_osfhandle(pipe, os.O_RDONLY), 'r')
             stdout = open(msvcrt.open_osfhandle(pipe, os.O_WRONLY), 'w')
-            p = subprocess.Popen(cmdargs, stdin=stdin, stdout=stdout, stderr=subprocess.STDOUT)
+            subprocess.Popen(cmdargs, stdin=stdin, stdout=stdout, stderr=subprocess.STDOUT)
 
             quit=True
         except pywintypes.error as e:
