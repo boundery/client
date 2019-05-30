@@ -86,6 +86,10 @@ network_id = None
 
 #########################
 
+@get('/test_elevate')
+def test_elevate():
+    return do_priv('get_nodeid')
+
 @get('/')
 @get('/step1')
 def step1():
