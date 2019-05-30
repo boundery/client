@@ -15,22 +15,6 @@ def get_mounts():
     drives = [i for i in drives.split("\x00") if i]
     return [i[:2] for i in drives if GetDriveType(i) == win32file.DRIVE_REMOVABLE]
 
-def _pipe_handle(pipe):
-    try:
-        win32pipe.ConnectNamedPipe(pipe, None)
-        while True:
-            result, resp = win32file.ReadFile(pipe, 64*1024)
-            print("message: %s" % resp)
-
-        print("Client connected")
-    except pywintypes.error as e:
-        if e.args[0] == 109:
-            print("broken pipe, bye bye")
-        else:
-            print("other? %s" % e)
-    finally:
-        win32file.CloseHandle(pipe)
-
 class NPWrapper:
     def __init__(self, pipe):
         win32pipe.ConnectNamedPipe(pipe, None)
@@ -70,4 +54,5 @@ def get_zerotier_token_path():
 
 def get_ssids():
     #XXX Figure out which SSID client is currently connected to.
+    #XXX Filter out non AP mode aps here.
     return [ (False, min(max(2 * (x[1] + 100), 0), 100), x[0]) for x in win32wifi.get_BSSI().values() ]
