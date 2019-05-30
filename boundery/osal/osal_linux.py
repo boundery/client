@@ -1,6 +1,7 @@
 import os, subprocess
 
 def get_mounts():
+    #XXX Check for /sys/sda/sdd/removable?
     ret = []
     with open("/proc/mounts", 'r') as f:
         for line in f:
@@ -40,5 +41,4 @@ def get_ssids():
             continue
         ssids.append(ssid[1:])
     ssids = [ (i[0] == 'yes', int(i[1]), i[2]) for i in ssids ]
-    ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
     return ssids

@@ -94,6 +94,7 @@ def test_elevate():
 @get('/step1')
 def step1():
     ssids = osal.get_ssids()
+    ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
     ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
     return template("step1", { "mountlist": step1_api1(), "ssids": ssids })
 
