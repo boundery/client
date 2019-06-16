@@ -21,19 +21,36 @@ linux:
 .PHONY: windows
 windows:
 	rm -rf windows
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) up
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) provision --provision-with build
+	$(VAGRANT) up windows
+	$(VAGRANT) provision --provision-with build windows
 	while [ ! -f "windows/builddone" ]; do sleep 1; done
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows $(VAGRANT) halt
+	$(VAGRANT) halt windows
 .PHONY: windows-gui
 windows-gui:
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant rdp -- /cert-ignore
+	$(VAGRANT) rdp windows -- /cert-ignore
 .PHONY: windows-halt
 windows-halt:
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant halt
+	$(VAGRANT) halt windows
 .PHONY: windows-destroy
 windows-destroy:
-	VAGRANT_VAGRANTFILE=Vagrantfile.windows vagrant destroy -f
+	$(VAGRANT) destroy -f windows
+
+.PHONY: macos
+macos:
+	rm -rf macOS
+	$(VAGRANT) up macos
+	$(VAGRANT) provision --provision-with build macos
+	$(VAGRANT) rsync-back macos
+	$(VAGRANT) halt macos
+.PHONY: macos-gui
+macos-gui:
+	vinagre localhost
+.PHONY: macos-halt
+macos-halt:
+	$(VAGRANT) halt macos
+.PHONY: macos-destroy
+macos-destroy:
+	$(VAGRANT) destroy -f macos
 
 .PHONY: dev
 dev:

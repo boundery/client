@@ -1,10 +1,11 @@
 raise "Run: vagrant plugin install winrm" unless Vagrant.has_plugin?('winrm')
 raise "Run: vagrant plugin install winrm-elevated" unless Vagrant.has_plugin?('winrm-elevated')
+raise "Run: vagrant plugin install vagrant-rsync-back" unless Vagrant.has_plugin?('vagrant-rsync-back')
 
 Vagrant.configure("2") do |config|
   config.vm.box = ""
 
-  config.vm.define "win", autostart: false do |win|
+  config.vm.define "windows", autostart: false do |win|
     #2.2.0 or later: win.vagrant.plugins = ["winrm", "winrm-elevated"]
 
     win.vm.provider "virtualbox" do |vb|
@@ -79,31 +80,58 @@ Vagrant.configure("2") do |config|
     #https://www.firegiant.com/wix/tutorial/net-and-net/bootstrapping/
   end
 
-  config.vm.define "mac", autostart: false do |mac|
-    mac.vm.box = "ashiq/osx-10.14"
+  config.vm.define "macos", autostart: false do |mac|
+    #2.2.0 or later: mac.vagrant.plugins = ["vagrant-rsync-back"]
+    mac.vm.box = "jhcook/macos-sierra"
+    mac.vm.network "forwarded_port", host: 5900, guest: 5900
 
     mac.vm.provider "virtualbox" do |vb|
       #vb.gui = true
       vb.memory = "2048"
-    end
 
-    mac.vm.provider "virtualbox" do |vb|
       vb.customize ['modifyvm', :id, '--ostype', 'MacOS_64']
-      vb.customize ['modifyvm', :id, '--paravirtprovider', 'default']
-      # Adjust CPU settings according to
-      # https://github.com/geerlingguy/macos-virtualbox-vm
-      vb.customize ['modifyvm', :id, '--cpuidset',
-                   '00000001', '000306a9', '00020800', '80000201', '178bfbff']
-      # Disable USB variant requiring Virtualbox proprietary extension pack
       vb.customize ["modifyvm", :id, '--usbehci', 'off', '--usbxhci', 'off']
     end
 
-    mac.vm.provision "prep", type: "shell", inline: <<-SHELL
-      pwd
+    config.vm.synced_folder ".", "/vagrant", type: "rsync",
+                            rsync__exclude: [".*"], rsync__chown: false
+
+    mac.vm.provision "prep", type: "shell", privileged: false, inline: <<-SHELL
+      echo " ****** Enabling VNC ******"
+      sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+        -activate -configure -access -on \
+        -configure -allowAccessFor -allUsers \
+        -configure -restart -agent -privs -all
+
+      echo " ****** Installing homebrew ******"
+      /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+      export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+
+      echo " ****** Installing needed brew packages ******"
+      brew install python
+
+      echo " ****** Setting up python venv ******"
+      python3 -m venv venv
+      . venv/bin/activate
+      export PIP_DISABLE_PIP_VERSION_CHECK=1
+
+      echo " ****** Installing briefcase ******"
+      pip install briefcase
     SHELL
 
-    mac.vm.provision "build", type: "shell", run: "never", inline: <<-SHELL
-      echo "build"
+    mac.vm.provision "build", type: "shell", run: "never", privileged: false, inline: <<-SHELL
+      echo " ****** Activating python venv ******"
+      . venv/bin/activate
+      export PIP_DISABLE_PIP_VERSION_CHECK=1
+
+      sudo chown -R vagrant /vagrant #workaround needing 'rsync__chown: false'
+      cd /vagrant
+
+      echo " ****** Starting installer build ******"
+      rm -rf macOS
+      python setup.py macos --build
+
+      echo " ****** Build done *******"
     SHELL
   end
 end

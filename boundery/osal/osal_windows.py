@@ -35,7 +35,7 @@ def sudo(cmd, *args):
         win32pipe.PIPE_WAIT, 1, 65536, 65536, 0, None)
 
     fullargs = [ os.path.join(os.path.dirname(__file__),
-                                  'osal_windows_elevate.py'), cmd ]
+                                  'osal_elevate.py'), cmd ]
     fullargs.extend(args)
     fullargs.append('--')
     fullargs.extend(sys.path)
