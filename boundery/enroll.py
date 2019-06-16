@@ -254,6 +254,8 @@ def step4_api2():
     global network_id
     network_id = SecretBox(from_server_key).decrypt(resp).decode()
 
+    #XXX Do we need to leave networks with overlapping IP space? Better to warn?
+    do_priv("leaveall private")
     do_priv("join %s" % network_id)
 
     return "ok"
@@ -323,6 +325,12 @@ def privsub_run():
                 netid = line.split(' ')[1]
                 zt_delete(authtoken, "network/%s" % netid)
                 print("ok") #XXX Error handling
+            elif line.startswith("leaveall "):
+                name = line.split(' ')[1]
+                networks = zt_get(authtoken, "network")
+                for netid in [ n['id'] for n in networks if n['name']==name ]:
+                    zt_delete(authtoken, "network/%s" % netid)
+                print("ok")
             elif line == "exit":
                 sys.exit()
         except Exception as e:
