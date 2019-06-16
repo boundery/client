@@ -5,7 +5,7 @@ import site
 site.addsitedir(next(filter(lambda i: i.endswith('app_packages'), sys.path), ''))
 
 from . import win32wifi
-import pywintypes, win32pipe, win32file, msvcrt
+import win32pipe, win32file, msvcrt
 from win32api import GetLogicalDriveStrings
 from win32file import GetDriveType
 
