@@ -93,8 +93,8 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, '--usbehci', 'off', '--usbxhci', 'off']
     end
 
-    config.vm.synced_folder ".", "/vagrant", type: "rsync",
-                            rsync__exclude: [".*"], rsync__chown: false
+    mac.vm.synced_folder ".", "/vagrant", type: "rsync",
+                         rsync__exclude: [".*"], rsync__chown: false
 
     mac.vm.provision "prep", type: "shell", privileged: false, inline: <<-SHELL
       echo " ****** Enabling VNC ******"

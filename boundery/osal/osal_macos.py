@@ -1,4 +1,4 @@
-import os, subprocess, objc, appdirs
+import sys, os, subprocess, objc, appdirs
 
 #https://stackoverflow.com/questions/49171769/how-where-to-best-retrieve-sudo-password-via-a-native-gui-on-a-macos-python-ba
 

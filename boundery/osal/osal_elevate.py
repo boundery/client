@@ -41,7 +41,7 @@ if os.name == "nt":
                     quit = True
         win32file.CloseHandle(pipe)
         print("Done", file=out, flush=True)
-else if os.name == "posix":
+elif os.name == "posix":
     def pipe_client():
         print("Connecting to fifos", file=out, flush=True)
         topriv = open(os.path.join(appdirs.user_data_dir("boundery"), "topriv"), 'r')
