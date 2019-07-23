@@ -1,6 +1,5 @@
 raise "Run: vagrant plugin install winrm" unless Vagrant.has_plugin?('winrm')
 raise "Run: vagrant plugin install winrm-elevated" unless Vagrant.has_plugin?('winrm-elevated')
-raise "Run: vagrant plugin install vagrant-rsync-back" unless Vagrant.has_plugin?('vagrant-rsync-back')
 
 Vagrant.configure("2") do |config|
   config.vm.box = ""
@@ -81,7 +80,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "macos", autostart: false do |mac|
-    #2.2.0 or later: mac.vagrant.plugins = ["vagrant-rsync-back"]
     mac.vm.box = "jhcook/macos-sierra"
     mac.vm.network "forwarded_port", host: 5900, guest: 5900
 

@@ -40,7 +40,7 @@ macos:
 	rm -rf macOS
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with build macos
-	$(VAGRANT) rsync-back macos
+	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
 	$(VAGRANT) halt macos
 .PHONY: macos-gui
 macos-gui:
