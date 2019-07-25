@@ -101,12 +101,17 @@ Vagrant.configure("2") do |config|
         -configure -allowAccessFor -allUsers \
         -configure -restart -agent -privs -all
 
-      echo " ****** Installing homebrew ******"
-      /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-      export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+      echo " ****** Installing git ******"
+      curl -# -L -o /tmp/git.dmg https://sourceforge.net/projects/git-osx-installer/files/git-2.22.0-intel-universal-mavericks.dmg/download?use_mirror=autoselect
+      VOL=`sudo hdiutil attach /tmp/git.dmg | grep /Volumes/ | cut -f3`
+      sudo installer -pkg "$VOL"/git-*.pkg -target /
+      sudo hdiutil detach "$VOL"
+      rm /tmp/git.dmg
 
-      echo " ****** Installing needed brew packages ******"
-      brew install python
+      echo " ****** Installing python ******"
+      curl -# -o /tmp/python3.pkg https://www.python.org/ftp/python/3.7.4/python-3.7.4-macosx10.9.pkg
+      sudo installer -pkg /tmp/python3.pkg -target /
+      rm /tmp/python3.pkg
 
       echo " ****** Setting up python venv ******"
       python3 -m venv venv
