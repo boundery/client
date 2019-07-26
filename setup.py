@@ -49,7 +49,7 @@ setup(
         # Desktop/laptop deployments
         'macos': {
             'app_requires': [
-	        'pyobjc-framework-CoreWLAN',
+	        'rubicon-objc',
             ]
         },
         'linux': {

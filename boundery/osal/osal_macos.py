@@ -1,4 +1,6 @@
-import sys, os, subprocess, objc, appdirs
+import sys, os, subprocess, appdirs
+from ctypes import cdll, util
+from rubicon.objc import ObjCClass, objc_method
 
 #https://stackoverflow.com/questions/49171769/how-where-to-best-retrieve-sudo-password-via-a-native-gui-on-a-macos-python-ba
 
@@ -49,16 +51,16 @@ def get_zerotier_token_path():
 
 def get_ssids():
     ssids = []
-    objc.loadBundle('CoreWLAN',
-                    bundle_path='/System/Library/Frameworks/CoreWLAN.framework',
-                    module_globals=globals())
-    iface = CWInterface.interface()
-    aps, err = iface.scanForNetworksWithName_includeHidden_error_(None, True, None)
-    for ap in aps:
-        if ap.ssid() is None:
-            continue
-        if ap.ibss():
-            continue
-        #XXX Figure out which SSID client is currently connected to.
-        ssids.append((False, min(max(2 * (ap.rssiValue() + 100), 0), 100), ap.ssid()))
+    cdll.LoadLibrary(util.find_library('CoreWLAN'))
+    CWInterface = ObjCClass('CWInterface')
+    interface = CWInterface.interface()
+    if interface:
+        aps = interface.scanForNetworksWithName_includeHidden_error_(None, True, None)
+        for ap in aps.allObjects():
+            if str(ap.ssid) is None:
+                continue
+            if int(ap.ibss):
+                continue
+            #XXX Figure out which SSID client is currently connected to.
+            ssids.append((False, min(max(2 * (int(ap.rssiValue) + 100), 0), 100), str(ap.ssid)))
     return ssids
