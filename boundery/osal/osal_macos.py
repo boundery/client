@@ -8,14 +8,16 @@ def get_mounts():
     ret = []
     p = subprocess.run(["mount"], stdout=subprocess.PIPE, universal_newlines=True)
     for line in p.stdout.split('\n'):
-        dev, on, mnt, *options = line.split()
+        if len(line) == 0 or line.startswith('map '):
+            continue
+        dev, on, mnt, *options = line.replace('(','').replace(')','').replace(',','').split()
         assert(on == "on")
         if mnt == '/':
             continue
-        if not options[0].startswith("(msdos"):
+        if "msdos" not in options:
             continue
         if not os.access(mnt, os.W_OK):
-                continue
+            continue
         ret.append(mnt)
     return ret
 
