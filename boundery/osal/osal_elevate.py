@@ -44,8 +44,9 @@ if os.name == "nt":
 elif os.name == "posix":
     def pipe_client():
         print("Connecting to fifos", file=out, flush=True)
-        topriv = open(os.path.join(appdirs.user_data_dir("boundery"), "topriv"), 'r')
-        frompriv = open(os.path.join(appdirs.user_data_dir("boundery"), "frompriv"), 'w')
+        boundery_dir = appdirs.user_data_dir("boundery")
+        topriv = open(os.path.join(boundery_dir, "topriv"), 'r')
+        frompriv = open(os.path.join(boundery_dir, "frompriv"), 'w')
 
         print("Starting: '%s' -- '%s'" % (cmdargs, sys.path), file=out, flush=True)
         subprocess.Popen(cmdargs, stdin=topriv, stdout=frompriv, stderr=subprocess.STDOUT)
@@ -57,5 +58,5 @@ if __name__ == '__main__':
     try:
         pipe_client()
     except BaseException as e:
-        print("Exception: %s" % e, file=out, flush=True)
+        print("Exception: '%s'" % e, file=out, flush=True)
     out.close()

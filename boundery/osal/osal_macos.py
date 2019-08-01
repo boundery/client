@@ -1,6 +1,6 @@
 import sys, os, subprocess, appdirs
 from ctypes import cdll, util
-from rubicon.objc import ObjCClass, objc_method
+from rubicon.objc import ObjCClass
 
 #https://stackoverflow.com/questions/49171769/how-where-to-best-retrieve-sudo-password-via-a-native-gui-on-a-macos-python-ba
 
@@ -29,24 +29,35 @@ def sudo(cmd, *args):
     fullargs.append('--')
     fullargs.extend(sys.path)
 
-    scriptname = os.path.join(appdirs.user_data_dir("boundery"), "script.sh")
+    boundery_dir = appdirs.user_data_dir("boundery")
+    os.makedirs(boundery_dir, exist_ok=True)
+    scriptname = os.path.join(boundery_dir, "script.sh")
     with open(scriptname, 'w') as script:
-        script.write('#!/bin/sh')
-        script.write("exec %s %s" % (sys.executable, ' '.join([ '"'+a+'"' for a in fullargs ])))
-    os.chmod(scriptname, 0o555)
+        script.write('#!/bin/sh\n')
+        script.write("exec %s %s\n" % (sys.executable, ' '.join([ '"'+a+'"' for a in fullargs ])))
+    os.chmod(scriptname, 0o755)
 
-    osascript = r"""do shell script "%s" with prompt "Create private networks" with administrator privileges""" % scriptname
+    #XXX Hack: we replace ' ' with '?' because I couldn't get osascript quoting right.
+    osascript = r"""do shell script "%s" with prompt "Create private networks" with administrator privileges""" % scriptname.replace(' ', '?')
 
-    topriv = os.path.join(appdirs.user_data_dir("boundery"), "topriv")
-    frompriv = os.path.join(appdirs.user_data_dir("boundery"), "frompriv")
-    os.mkfifo(topriv)
-    os.mkfifo(frompriv)
+    topriv = os.path.join(boundery_dir, "topriv")
+    frompriv = os.path.join(boundery_dir, "frompriv")
+    try:
+        os.remove(topriv)
+    except FileNotFoundError:
+        pass
+    try:
+        os.remove(frompriv)
+    except FileNotFoundError:
+        pass
+    os.mkfifo(topriv, mode=0o700)
+    os.mkfifo(frompriv, mode=0o700)
 
     p = subprocess.Popen(["osascript", "-e", osascript])
     p.stdin = open(topriv, 'w')
     p.stdout = open(frompriv, 'r')
     p.stderr = p.stdout
-    return NPWrapper(topriv, frompriv)
+    return p
 
 def get_zerotier_token_path():
     return "/Library/Application Support/ZeroTier/One/authtoken.secret"

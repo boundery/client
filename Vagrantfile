@@ -88,7 +88,7 @@ Vagrant.configure("2") do |config|
       vb.memory = "2048"
 
       vb.customize ['modifyvm', :id, '--ostype', 'MacOS_64']
-      vb.customize ["modifyvm", :id, '--usbehci', 'off', '--usbxhci', 'off']
+      vb.customize ["modifyvm", :id, '--usbxhci', 'off']
     end
 
     mac.vm.synced_folder ".", "/vagrant", type: "rsync",
