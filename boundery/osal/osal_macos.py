@@ -34,7 +34,7 @@ def sudo(cmd, *args):
     scriptname = os.path.join(boundery_dir, "script.sh")
     with open(scriptname, 'w') as script:
         script.write('#!/bin/sh\n')
-        script.write("exec %s %s\n" % (sys.executable, ' '.join([ '"'+a+'"' for a in fullargs ])))
+        script.write('exec "%s" %s\n' % (sys.executable, ' '.join([ '"'+a+'"' for a in fullargs ])))
     os.chmod(scriptname, 0o755)
 
     #XXX Hack: we replace ' ' with '?' because I couldn't get osascript quoting right.
