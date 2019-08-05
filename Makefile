@@ -28,12 +28,6 @@ windows:
 .PHONY: windows-gui
 windows-gui:
 	$(VAGRANT) rdp windows -- /cert-ignore
-.PHONY: windows-halt
-windows-halt:
-	$(VAGRANT) halt windows
-.PHONY: windows-destroy
-windows-destroy:
-	$(VAGRANT) destroy -f windows
 
 .PHONY: macos
 macos:
@@ -45,12 +39,6 @@ macos:
 .PHONY: macos-gui
 macos-gui:
 	vinagre localhost
-.PHONY: macos-halt
-macos-halt:
-	$(VAGRANT) halt macos
-.PHONY: macos-destroy
-macos-destroy:
-	$(VAGRANT) destroy -f macos
 
 .PHONY: dev
 dev:
