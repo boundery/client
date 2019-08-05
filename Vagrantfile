@@ -96,6 +96,8 @@ Vagrant.configure("2") do |config|
                          rsync__exclude: [".*"], rsync__chown: false
 
     mac.vm.provision "prep", type: "shell", privileged: false, inline: <<-SHELL
+      set -e
+
       echo " ****** Enabling VNC ******"
       sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
         -activate -configure -access -on \
@@ -124,6 +126,8 @@ Vagrant.configure("2") do |config|
     SHELL
 
     mac.vm.provision "build", type: "shell", run: "never", privileged: false, inline: <<-SHELL
+      set -e
+
       echo " ****** Activating python venv ******"
       . venv/bin/activate
       export PIP_DISABLE_PIP_VERSION_CHECK=1
