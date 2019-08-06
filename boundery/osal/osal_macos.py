@@ -1,19 +1,19 @@
-import sys, os, subprocess, appdirs
+import sys, os, subprocess, re, appdirs
 from ctypes import cdll, util
 from rubicon.objc import ObjCClass
 
 #https://stackoverflow.com/questions/49171769/how-where-to-best-retrieve-sudo-password-via-a-native-gui-on-a-macos-python-ba
 
+mount_re = re.compile(r'^/dev/[a-zA-Z0-9]+ on (/Volumes/[^/]+) [(](.+)[)]$')
 def get_mounts():
     ret = []
     p = subprocess.run(["mount"], stdout=subprocess.PIPE, universal_newlines=True)
     for line in p.stdout.split('\n'):
-        if len(line) == 0 or line.startswith('map '):
+        match = mount_re.match(line)
+        if not match:
             continue
-        dev, on, mnt, *options = line.replace('(','').replace(')','').replace(',','').split()
-        assert(on == "on")
-        if mnt == '/':
-            continue
+        mnt = match.groups()[0]
+        options = match.groups()[1].split(', ')
         if "msdos" not in options:
             continue
         if not os.access(mnt, os.W_OK):
