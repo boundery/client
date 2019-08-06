@@ -84,11 +84,12 @@ def self_test():
         mounts = get_mounts()
         if '/Volumes/BOUNDERYTST' not in mounts:
             logging.error("get_mounts failed: '%s'" % mounts)
+            return 10
 
         mp = sudo('cat', '/etc/master.passwd')
         if len(mp.stdout.read()) == 0:
             logging.error("sudo failed")
-            return 10
+            return 20
 
         ssids = get_ssids()
     except:
