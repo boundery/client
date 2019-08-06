@@ -36,6 +36,13 @@ macos:
 	$(VAGRANT) provision --provision-with build macos
 	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
 	$(VAGRANT) halt macos
+.PHONY: macos-test #XXX Make this depend on the built .dmg!
+macos-test:
+	rm -f macOS/tests_passed
+	$(VAGRANT) up macos
+	$(VAGRANT) provision --provision-with test macos
+	$(VAGRANT) ssh macos --no-tty -c "[ -f /vagrant/macOS/tests_passed ]"
+	$(VAGRANT) halt macos
 .PHONY: macos-gui
 macos-gui:
 	vinagre localhost

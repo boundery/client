@@ -53,7 +53,10 @@ def poll_ready():
     webbrowser.open("http://localhost:%s/" % settings.PORT)
 
 def main():
-    if "--privsub" in sys.argv:
+    if os.environ.get('BOUNDERY_APP_TEST', '') == '1':
+        from boundery import osal
+        sys.exit(osal.self_test())
+    elif "--privsub" in sys.argv:
         enroll.privsub_run()
     else:
         if sys.executable.upper().endswith("\\PYTHONW.EXE"):

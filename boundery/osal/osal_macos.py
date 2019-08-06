@@ -77,3 +77,20 @@ def get_ssids():
             #XXX Figure out which SSID client is currently connected to.
             ssids.append((False, min(max(2 * (int(ap.rssiValue) + 100), 0), 100), str(ap.ssid)))
     return ssids
+
+def self_test():
+    import logging
+    try:
+        mounts = get_mounts()
+        if '/Volumes/BOUNDERYTST' not in mounts:
+            logging.error("get_mounts failed: '%s'" % mounts)
+
+        mp = sudo('cat', '/etc/master.passwd')
+        if len(mp.stdout.read()) == 0:
+            logging.error("sudo failed")
+            return 10
+
+        ssids = get_ssids()
+    except:
+        logging.error("foo", exc_info=True)
+        return 99

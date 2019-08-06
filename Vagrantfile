@@ -141,5 +141,38 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Build done *******"
     SHELL
+
+    mac.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
+      set -e
+
+      echo " ****** Install ZeroTier ******"
+      if [ -z "`which zerotier-cli`" ]; then
+         curl -# -L -o /tmp/zt.pkg https://download.zerotier.com/dist/ZeroTier%20One.pkg
+         sudo installer -pkg /tmp/zt.pkg -target /
+         rm /tmp/zt.pkg
+      fi
+
+      sudo chown -R vagrant /vagrant #workaround needing 'rsync__chown: false'
+      cd /vagrant
+
+      echo " ****** Install client ******"
+      VOL=`sudo hdiutil attach "/vagrant/macOS/Boundery Client.dmg" | grep /Volumes/ | cut -f3`
+
+      echo " ****** Run tests *******"
+      dd if=/dev/zero bs=512 count=2880 of=/tmp/msdos.img 2>&1
+      DEV=`hdid -nomount /tmp/msdos.img`
+      newfs_msdos -v BOUNDERYTST $DEV 2>&1
+      hdiutil detach $DEV -force
+      DEV=`hdid /tmp/msdos.img | cut -d ' ' -f 1`
+
+      sudo BOUNDERY_APP_TEST=1 "$VOL/Boundery Client.app/Contents/MacOS/Boundery Client"
+      touch /vagrant/macOS/tests_passed
+
+      hdiutil detach $DEV -force
+
+      echo " ****** Tests done, detaching .dmg *******"
+      sudo hdiutil detach "$VOL" -force
+
+    SHELL
   end
 end
