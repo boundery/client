@@ -7,7 +7,10 @@ from ctypes.wintypes import *
 def customresize(array, new_size):
     return (array._type_*new_size).from_address(addressof(array))
 
-wlanapi = windll.LoadLibrary('wlanapi.dll')
+try:
+    wlanapi = windll.LoadLibrary('wlanapi.dll')
+except:
+    wlanapi = None
 
 ERROR_SUCCESS = 0
 
@@ -187,43 +190,38 @@ class WLAN_AVAILABLE_NETWORK_LIST_BSS(Structure):
         ("Network", WLAN_BSS_ENTRY * 1)
     ]
 
-WlanOpenHandle = wlanapi.WlanOpenHandle
-WlanOpenHandle.argtypes = (DWORD, c_void_p, POINTER(DWORD), POINTER(HANDLE))
-WlanOpenHandle.restype = DWORD
+if wlanapi:
+    WlanOpenHandle = wlanapi.WlanOpenHandle
+    WlanOpenHandle.argtypes = (DWORD, c_void_p, POINTER(DWORD), POINTER(HANDLE))
+    WlanOpenHandle.restype = DWORD
 
-WlanCloseHandle = wlanapi.WlanCloseHandle
-WlanCloseHandle.argtypes = (HANDLE, c_void_p)
-WlanCloseHandle.restype = DWORD
+    WlanCloseHandle = wlanapi.WlanCloseHandle
+    WlanCloseHandle.argtypes = (HANDLE, c_void_p)
+    WlanCloseHandle.restype = DWORD
 
-WlanEnumInterfaces = wlanapi.WlanEnumInterfaces
-WlanEnumInterfaces.argtypes = (HANDLE, c_void_p,
-                               POINTER(POINTER(WLAN_INTERFACE_INFO_LIST)))
-WlanEnumInterfaces.restype = DWORD
+    WlanEnumInterfaces = wlanapi.WlanEnumInterfaces
+    WlanEnumInterfaces.argtypes = (HANDLE, c_void_p,
+                                   POINTER(POINTER(WLAN_INTERFACE_INFO_LIST)))
+    WlanEnumInterfaces.restype = DWORD
 
-WlanGetAvailableNetworkList = wlanapi.WlanGetAvailableNetworkList
-WlanGetAvailableNetworkList.argtypes = (HANDLE, POINTER(GUID), DWORD, c_void_p,
-                                        POINTER(POINTER(WLAN_AVAILABLE_NETWORK_LIST)))
-WlanGetAvailableNetworkList.restype = DWORD
+    WlanGetAvailableNetworkList = wlanapi.WlanGetAvailableNetworkList
+    WlanGetAvailableNetworkList.argtypes = (HANDLE, POINTER(GUID), DWORD, c_void_p,
+                                            POINTER(POINTER(WLAN_AVAILABLE_NETWORK_LIST)))
+    WlanGetAvailableNetworkList.restype = DWORD
 
-WlanGetNetworkBssList = wlanapi.WlanGetNetworkBssList
-WlanGetNetworkBssList.argtypes = (HANDLE, POINTER(GUID),POINTER(GUID),POINTER(GUID), c_bool, c_void_p,
-                                  POINTER(POINTER(WLAN_BSS_LIST)))
-WlanGetNetworkBssList.restype = DWORD
+    WlanGetNetworkBssList = wlanapi.WlanGetNetworkBssList
+    WlanGetNetworkBssList.argtypes = (HANDLE, POINTER(GUID),POINTER(GUID),POINTER(GUID), c_bool, c_void_p,
+                                      POINTER(POINTER(WLAN_BSS_LIST)))
+    WlanGetNetworkBssList.restype = DWORD
 
+    WlanFreeMemory = wlanapi.WlanFreeMemory
+    WlanFreeMemory.argtypes = [c_void_p]
 
-WlanFreeMemory = wlanapi.WlanFreeMemory
-WlanFreeMemory.argtypes = [c_void_p]
-
-
-WlanScan = wlanapi.WlanScan
-WlanScan.argtypes = (HANDLE, POINTER(GUID),c_void_p,c_void_p, c_void_p)
-WlanScan.restype = DWORD
-
-
-
+    WlanScan = wlanapi.WlanScan
+    WlanScan.argtypes = (HANDLE, POINTER(GUID),c_void_p,c_void_p, c_void_p)
+    WlanScan.restype = DWORD
 
 def get_interface():
-
     NegotiatedVersion = DWORD()
     ClientHandle = HANDLE()
     ret = WlanOpenHandle(1, None, byref(NegotiatedVersion), byref(ClientHandle))
@@ -264,8 +262,12 @@ class MAC_BSSID_POWER:
     def getMac(self):
         return self.mac
 
-
 def get_BSSI():
+    if not wlanapi:
+        class N:
+            def values(self):
+                return []
+        return N()
 
     BSSI_Values={}
 
@@ -287,7 +289,6 @@ def get_BSSI():
             # print "Interface: %s" % (iface.strInterfaceDescription)
 
             pAvailableNetworkList2 = pointer(WLAN_BSS_LIST())
-
 
             ret2 = WlanGetNetworkBssList(ClientHandle,
                                          byref(iface.InterfaceGuid),
@@ -323,44 +324,3 @@ def get_BSSI():
     finally:
         WlanFreeMemory(pInterfaceList)
     return BSSI_Values
-
-
-def get_BSSI_times_and_total_seconds(times,seconds):
-
-    BSSI_to_return = {}
-
-    for i in range(0,seconds*times):
-        time_to_sleep = float(1.0/times)
-        time.sleep(time_to_sleep)
-        got_bssi_temp = get_BSSI()
-
-        for bssi in got_bssi_temp:
-            if not BSSI_to_return.get(bssi):
-                BSSI_to_return[bssi] = MAC_BSSID_POWER(bssi,got_bssi_temp[bssi][0])
-                BSSI_to_return[bssi].addPower( got_bssi_temp[bssi][1] )
-
-                #BSSI_to_return[bssi] = [got_bssi_temp[bssi][1]]
-
-            else:
-                BSSI_to_return[bssi].addPower( got_bssi_temp[bssi][1] )
-                #BSSI_to_return[bssi].append(got_bssi_temp[bssi][1])
-        print("Medicao "+str(i)+" de "+str(seconds*times))
-    print(BSSI_to_return)
-    return BSSI_to_return
-
-
-
-if __name__ == '__main__':
-    import time
-    test = get_BSSI()
-    for i in range(0,10):
-        time.sleep(0.5)
-        oldTest = test
-        test = get_BSSI()
-        print("Teste: "+str(i))
-        if oldTest == test:
-            print("IGUAL")
-        else:
-            print("DIFERENTE")
-        print(test)
-    print("End")
