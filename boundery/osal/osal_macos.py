@@ -81,17 +81,22 @@ def get_ssids():
 def self_test():
     import logging
     try:
+        print("Testing get_mounts")
         mounts = get_mounts()
         if '/Volumes/BOUNDERYTST' not in mounts:
             logging.error("get_mounts failed: '%s'" % mounts)
             return 10
 
-        mp = sudo('cat', '/etc/master.passwd')
-        if len(mp.stdout.read()) == 0:
-            logging.error("sudo failed")
+        print("Testing ZT info")
+        zt = sudo('zerotier-cli', 'info')
+        zt_out = zt.stdout.read()
+        if not zt_out.startswith('200 info '):
+            logging.error("sudo failed: '%s'" % zt_out)
             return 20
 
+        print("Testing get_ssids")
         ssids = get_ssids()
+        print("Testing complete")
     except:
         logging.error("foo", exc_info=True)
         return 99
