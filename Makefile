@@ -25,9 +25,16 @@ windows:
 	$(VAGRANT) provision --provision-with build windows
 	while [ ! -f "windows/builddone" ]; do sleep 1; done
 	$(VAGRANT) halt windows
+.PHONY: windows-test #XXX Make this depend on the built .msi!
+windows-test:
+	rm -f windows/tests_passed
+	$(VAGRANT) up windows
+	$(VAGRANT) provision --provision-with test windows
+	[ -f windows/tests_passed ]
+	$(VAGRANT) halt windows
 .PHONY: windows-gui
 windows-gui:
-	$(VAGRANT) rdp windows -- /cert-ignore
+	$(VAGRANT) rdp windows -- /cert-ignore +clipboard
 
 .PHONY: macos
 macos:

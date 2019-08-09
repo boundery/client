@@ -74,9 +74,24 @@ Vagrant.configure("2") do |config|
       echo " ****** Build done *******"
       echo "" > \\vagrant\\windows\\builddone
     SHELL
-
-    #Package up into an exe (also with zerotier's .msi?):
+    #XXX Package up into an exe (also with zerotier's .msi?):
     #https://www.firegiant.com/wix/tutorial/net-and-net/bootstrapping/
+
+    win.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
+      echo " ****** Installing ZeroTier ******"
+      choco install -y zerotier-one
+
+      echo " ****** Install client ******"
+      Start-Process msiexec.exe -Wait -ArgumentList '/I "C:\\vagrant\\windows\\Boundery Client-0.0.1.msi" /qn'
+
+      echo " ****** Run tests *******"
+      cd "\\Program Files (x86)\\Boundery Client"
+      $env:BOUNDERY_APP_TEST = '1'
+      & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
+      echo "" > \\vagrant\\windows\\tests_passed
+
+      echo " ****** Tests done *******"
+    SHELL
   end
 
   config.vm.define "macos", autostart: false do |mac|
@@ -145,7 +160,7 @@ Vagrant.configure("2") do |config|
     mac.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
       set -e
 
-      echo " ****** Install ZeroTier ******"
+      echo " ****** Installing ZeroTier ******"
       if [ -z "`which zerotier-cli`" ]; then
          curl -# -L -o /tmp/zt.pkg https://download.zerotier.com/dist/ZeroTier%20One.pkg
          sudo installer -pkg /tmp/zt.pkg -target /

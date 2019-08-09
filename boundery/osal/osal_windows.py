@@ -45,8 +45,7 @@ def sudo(cmd, *args):
     if fullargs[1].upper().endswith('\\PYTHON.EXE'):
         fullargs[1] = fullargs[1][:-len('python.exe')] + 'pythonw.exe'
     ctypes.windll.shell32.ShellExecuteW(None, "runas",
-                                            python, subprocess.list2cmdline(fullargs), None, 1)
-
+                                        python, subprocess.list2cmdline(fullargs), None, 1)
     return NPWrapper(pipe)
 
 def get_zerotier_token_path():
@@ -56,3 +55,26 @@ def get_ssids():
     #XXX Figure out which SSID client is currently connected to.
     #XXX Filter out non AP mode aps here.
     return [ (False, min(max(2 * (x[1] + 100), 0), 100), x[0]) for x in win32wifi.get_BSSI().values() ]
+
+def self_test():
+    import logging
+    try:
+        print("Testing get_mounts")
+        mounts = get_mounts()
+        #if '/Volumes/BOUNDERYTST' not in mounts:
+        #    logging.error("get_mounts failed: '%s'" % mounts)
+        #    return 10
+
+        print("Testing ZT info")
+        zt = sudo('c:\Program Files (x86)\ZeroTier\One\zerotier-cli.bat', 'info')
+        zt_out = zt.stdout.read()
+        if not zt_out.startswith('200 info '):
+            logging.error("sudo failed: '%s'" % zt_out)
+            return 20
+
+        print("Testing get_ssids")
+        ssids = get_ssids()
+        print("Testing complete")
+    except:
+        logging.error("foo", exc_info=True)
+        return 99

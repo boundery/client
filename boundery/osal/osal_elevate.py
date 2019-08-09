@@ -10,7 +10,9 @@ import appdirs
 import site
 site.addsitedir(next(filter(lambda i: i.endswith('app_packages'), sys.path), ''))
 
-out = open(os.path.join(appdirs.user_data_dir("boundery"), "elevate.log"), 'w')
+log_dir = appdirs.user_data_dir("boundery")
+os.makedirs(log_dir, exist_ok=True)
+out = open(os.path.join(log_dir, "elevate.log"), 'w')
 
 if os.name == "nt":
     import pywintypes, win32file, msvcrt
