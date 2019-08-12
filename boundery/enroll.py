@@ -100,16 +100,16 @@ def step1_api1():
     #XXX Emit a useful message if there are no mounts!
     return template("step1_api1", { "mounts": osal.get_mounts() })
 
+ssid_dict = {}
 @get('/step1_api2')
 def step1_api2():
-    #XXX This should keep old ssids even if they disappear.
-    ssid_dict = {}
+    global ssid_dict
     for ssid in osal.get_ssids(): #(is_connected, signal, name)
         if len(ssid[2].strip()) == 0:
             continue
         old_ssid = ssid_dict.get(ssid[2], None)
         if old_ssid:
-            if ssid[0] or ssid[1] > old_ssid[1]:
+            if (ssid[0] != old_ssid[0]) or (ssid[1] > old_ssid[1]):
                 ssid_dict[ssid[2]] = ssid
         else:
             ssid_dict[ssid[2]] = ssid
