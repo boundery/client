@@ -60,7 +60,7 @@ def self_test():
     import logging
     try:
         print("Testing get_mounts")
-        mounts = get_mounts()
+        get_mounts()
         #if '/Volumes/BOUNDERYTST' not in mounts:
         #    logging.error("get_mounts failed: '%s'" % mounts)
         #    return 10
@@ -73,7 +73,7 @@ def self_test():
             return 20
 
         print("Testing get_ssids")
-        ssids = get_ssids()
+        get_ssids()
         print("Testing complete")
     except:
         logging.error("foo", exc_info=True)

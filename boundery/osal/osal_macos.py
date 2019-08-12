@@ -95,7 +95,7 @@ def self_test():
             return 20
 
         print("Testing get_ssids")
-        ssids = get_ssids()
+        get_ssids()
         print("Testing complete")
     except:
         logging.error("foo", exc_info=True)
