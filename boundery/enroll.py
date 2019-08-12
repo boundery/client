@@ -129,7 +129,6 @@ def step1_post():
 
 def step1_handler(ssid, wifi_pw, mount):
     if "ZIPFILE" not in os.environ:
-        #XXX More granular progress than just per-file.  Monkeypatch shutil.copyfileobj?
         r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
         bio = io.BytesIO()
         zip_length = r.headers.get('content-length')
@@ -152,6 +151,7 @@ def step1_handler(ssid, wifi_pw, mount):
         zis = zf.infolist()
         num_bytes = reduce(add, [ zi.file_size for zi in zis ])
         bytes_written = 0
+        #XXX More frequent progress than just per-file.  Monkeypatch shutil.copyfileobj?
         for zi in zis:
             zf.extract(zi, path=mount)
             bytes_written += zi.file_size
