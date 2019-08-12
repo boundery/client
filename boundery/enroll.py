@@ -102,7 +102,19 @@ def step1_api1():
 
 @get('/step1_api2')
 def step1_api2():
-    ssids = osal.get_ssids()
+    #XXX This should keep old ssids even if they disappear.
+    ssid_dict = {}
+    for ssid in osal.get_ssids(): #(is_connected, signal, name)
+        if len(ssid[2].strip()) == 0:
+            continue
+        old_ssid = ssid_dict.get(ssid[2], None)
+        if old_ssid:
+            if ssid[0] or ssid[1] > old_ssid[1]:
+                ssid_dict[ssid[2]] = ssid
+        else:
+            ssid_dict[ssid[2]] = ssid
+    ssids = list(ssid_dict.values())
+
     ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
     ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
     return template("step1_api2", { "ssids": ssids })
