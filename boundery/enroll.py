@@ -93,15 +93,19 @@ def test_elevate():
 @get('/')
 @get('/step1')
 def step1():
-    ssids = osal.get_ssids()
-    ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
-    ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
-    return template("step1", { "mountlist": step1_api1(), "ssids": ssids })
+    return template("step1", { "mountlist": step1_api1(), "ssidlist": step1_api2() })
 
 @get('/step1_api1')
 def step1_api1():
     #XXX Emit a useful message if there are no mounts!
     return template("step1_api1", { "mounts": osal.get_mounts() })
+
+@get('/step1_api2')
+def step1_api2():
+    ssids = osal.get_ssids()
+    ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
+    ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
+    return template("step1_api2", { "ssids": ssids })
 
 step1_thread = None
 @post('/step1')
@@ -110,8 +114,9 @@ def step1_post():
     if mount not in osal.get_mounts():
         raise Exception("Bad mountpoint from client!")
 
+    #XXX This is busted if your ssid is actually '__other'
     ssid = request.forms.get("ssid").strip()
-    if ssid == "other":
+    if ssid == "__other":
         ssid = request.forms.get("other_ssid").strip()
     else:
         ssid = ssid[1:]
@@ -181,8 +186,8 @@ def step1_handler(ssid, wifi_pw, mount):
     step1_thread.cur += 1
 
 
-@get('/step1_api2')
-def step1_api2():
+@get('/step1_post_api1')
+def step1_post_api2():
     global step1_thread
     if step1_thread.cur == step1_thread.max:
         step1_thread.join()

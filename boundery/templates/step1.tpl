@@ -67,26 +67,20 @@
 
 <h1>Choose Wifi settings, then choose the device to use to create the boot card.</h1>
 
-<p>If you are installing to a raspberry pi (or any other computer that doesn't support 5Ghz wifi), make sure to pick a 2.4Ghz Wifi network.</p>
+<p>If you are installing to a raspberry pi 3B (not 3B+), or any other computer that doesn't support 5GHz wifi, make sure to pick a 2.4GHz Wifi network.</p>
 
 <form action="/step1" method="post">
   <div>
     <label for="ssid">Wifi Network Name (SSID):</label>
     <br>
-    % for ssid in ssids:
-    % if ssid[2]:
-    <input type="radio" name="ssid" value="={{ssid[1]}}" checked="checked">{{ssid[0]}}<br>
-    % else:
-    <input type="radio" name="ssid" value="={{ssid[1]}}">{{ssid[0]}}<br>
-    % end
-    % end
+    <div id="ssidlist">{{!ssidlist}}</div>
     <div>
-      <input type="radio" name="ssid" value="other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
+      <input type="radio" name="ssid" value="__other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
     </div>
     <input type="radio" name="ssid" value="" required>None. I'm using wired ethernet.
   </div>
   <div>
-    <label for="wifi_pw">Wifi Password (Blank for none):</label>
+    <label for="wifi_pw">Wifi Password (Leave blank for none):</label>
     <input type="text" name="wifi_pw" value="">
   </div>
   <br>
@@ -112,5 +106,25 @@
     xhr.open("GET", "/step1_api1", true);
     xhr.send();
   }
-  window.onload = poll1();
+  function poll2() {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (this.readyState == 4) {
+        if (this.status == 200) {
+          var results = document.getElementById("ssidlist");
+          if (results.innerHTML != this.responseText) {
+            results.innerHTML = this.responseText;
+          }
+        }
+        setTimeout(poll2, 5000);
+      }
+    };
+    xhr.open("GET", "/step1_api2", true);
+    xhr.send();
+  }
+  function poll_all() {
+    poll1()
+    poll2()
+  }
+  window.onload = poll_all();
 </script>
