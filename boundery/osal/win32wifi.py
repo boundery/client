@@ -1,6 +1,5 @@
-__author__ = 'Pedro Gomes'
+#Based on code by Pedro Gomes
 
-import time
 from ctypes import *
 from ctypes.wintypes import *
 
@@ -220,47 +219,6 @@ if wlanapi:
     WlanScan = wlanapi.WlanScan
     WlanScan.argtypes = (HANDLE, POINTER(GUID),c_void_p,c_void_p, c_void_p)
     WlanScan.restype = DWORD
-
-def get_interface():
-    NegotiatedVersion = DWORD()
-    ClientHandle = HANDLE()
-    ret = WlanOpenHandle(1, None, byref(NegotiatedVersion), byref(ClientHandle))
-    if ret != ERROR_SUCCESS:
-        raise(Exception(FormatError(ret)))
-        # find all wireless network interfaces
-    pInterfaceList = pointer(WLAN_INTERFACE_INFO_LIST())
-    ret = WlanEnumInterfaces(ClientHandle, None, byref(pInterfaceList))
-    if ret != ERROR_SUCCESS:
-        raise(Exception(FormatError(ret)))
-    try:
-        ifaces = customresize(pInterfaceList.contents.InterfaceInfo,
-                              pInterfaceList.contents.NumberOfItems)
-        # find each available network for each interface
-        for iface in ifaces:
-            #print "Interface: %s" % (iface.strInterfaceDescription)
-            interface = iface.strInterfaceDescription
-
-    finally:
-        WlanFreeMemory(pInterfaceList)
-        return interface
-
-class MAC_BSSID_POWER:
-    """Classe para os valores retirados"""
-    def __init__(self, mac, bssid):
-
-        self.mac = str(mac)
-        self.bssid = str(bssid)
-        self.valores = []
-
-    def addPower(self,power):
-        self.valores.append(int(power))
-
-    def getBssid(self):
-        return self.bssid
-    def getPowers(self):
-        return self.valores
-    def getMac(self):
-        return self.mac
 
 def get_BSSI():
     if not wlanapi:
