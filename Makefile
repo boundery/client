@@ -56,7 +56,7 @@ macos-gui:
 
 .PHONY: dev
 dev:
-	@python3 boundery/app.py --debug --local
+	@python3 -m boundery --debug --local
 
 .PHONY: check
 check:
