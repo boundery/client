@@ -1,8 +1,11 @@
 raise "Run: vagrant plugin install winrm" unless Vagrant.has_plugin?('winrm')
 raise "Run: vagrant plugin install winrm-elevated" unless Vagrant.has_plugin?('winrm-elevated')
 
-vdifile = File.join(File.dirname(File.expand_path(__FILE__)), ".vagrant/vfat.vdi")
-def add_usb_vdi(vb, machine, vdi)
+def add_usb_vdi(vb, machine)
+  vdi = File.join(File.dirname(File.expand_path(__FILE__)), ".vagrant/vfat-#{machine}.vdi")
+  if not File.exist?(vdi)
+    return
+  end
   id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
   if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
     vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
@@ -22,10 +25,8 @@ Vagrant.configure("2") do |config|
       #vb.gui = true
       vb.memory = "2048"
 
-      if File.exist?(vdifile)
-        vb.customize ['modifyvm', :id, '--usb', 'on']
-        add_usb_vdi(vb, 'windows', vdifile)
-      end
+      vb.customize ['modifyvm', :id, '--usb', 'on']
+      add_usb_vdi(vb, 'windows')
     end
 
     win.vm.guest = :windows
@@ -126,9 +127,7 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--usbxhci', 'off']
       vb.customize ['modifyvm', :id, '--usbehci', 'off']
 
-      if File.exist?(vdifile)
-        add_usb_vdi(vb, 'macos', vdifile)
-      end
+      add_usb_vdi(vb, 'macos')
     end
 
     mac.vm.synced_folder ".", "/vagrant", type: "rsync",
