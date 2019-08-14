@@ -18,6 +18,13 @@ linux:
 #	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-android \
 #	  /bin/sh -c "python3 setup.py android && python3 setup.py android --build"
 
+.vagrant/vfat.img:
+	dd if=/dev/zero of=$@ bs=1024 count=10k
+	printf 'n\np\n1\n\n\nt\nc\nw\n' | fdisk $@
+	mformat -i$@@@1M -s32 -h64 -t9 -v"BNDRY TEST"
+.vagrant/vfat.vdi: .vagrant/vfat.img
+	VBoxManage convertfromraw $< $@ --format vdi --uuid 00112233-4455-6677-8899-aabbccddeeff
+
 .PHONY: windows
 windows:
 	rm -rf windows
@@ -26,7 +33,7 @@ windows:
 	while [ ! -f "windows/builddone" ]; do sleep 1; done
 	$(VAGRANT) halt windows
 .PHONY: windows-test #XXX Make this depend on the built .msi!
-windows-test:
+windows-test: .vagrant/vfat.vdi
 	rm -f windows/tests_passed
 	$(VAGRANT) up windows
 	$(VAGRANT) provision --provision-with test windows
@@ -44,7 +51,7 @@ macos:
 	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
 	$(VAGRANT) halt macos
 .PHONY: macos-test #XXX Make this depend on the built .dmg!
-macos-test:
+macos-test: .vagrant/vfat.vdi
 	rm -f macOS/tests_passed
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with test macos

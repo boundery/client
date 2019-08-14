@@ -1,6 +1,17 @@
 raise "Run: vagrant plugin install winrm" unless Vagrant.has_plugin?('winrm')
 raise "Run: vagrant plugin install winrm-elevated" unless Vagrant.has_plugin?('winrm-elevated')
 
+vdifile = File.join(File.dirname(File.expand_path(__FILE__)), ".vagrant/vfat.vdi")
+def add_usb_vdi(vb, machine, vdi)
+  id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
+  if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
+    vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
+  end
+  vb.customize ['storageattach', id, '--storagectl', 'BOUNDERYUSB',
+                '--port', 1, '--device', 0, '--type', 'hdd',
+                '--medium', vdi, '--hotpluggable', 'on', '--nonrotational', 'on']
+end
+
 Vagrant.configure("2") do |config|
   config.vm.box = ""
 
@@ -10,6 +21,11 @@ Vagrant.configure("2") do |config|
     win.vm.provider "virtualbox" do |vb|
       #vb.gui = true
       vb.memory = "2048"
+
+      if File.exist?(vdifile)
+        vb.customize ['modifyvm', :id, '--usb', 'on']
+        add_usb_vdi(vb, 'windows', vdifile)
+      end
     end
 
     win.vm.guest = :windows
@@ -87,6 +103,7 @@ Vagrant.configure("2") do |config|
       echo " ****** Run tests *******"
       cd "\\Program Files (x86)\\Boundery Client"
       $env:BOUNDERY_APP_TEST = '1'
+      $env:BOUNDERY_ENUM_FIXED = '1' #VirtualBox USB devices aren't removable.
       & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
       echo "" > \\vagrant\\windows\\tests_passed
 
@@ -108,6 +125,10 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--ostype', 'MacOS_64']
       vb.customize ['modifyvm', :id, '--usbxhci', 'off']
       vb.customize ['modifyvm', :id, '--usbehci', 'off']
+
+      if File.exist?(vdifile)
+        add_usb_vdi(vb, 'macos', vdifile)
+      end
     end
 
     mac.vm.synced_folder ".", "/vagrant", type: "rsync",
@@ -177,16 +198,9 @@ Vagrant.configure("2") do |config|
       VOL=`sudo hdiutil attach "/vagrant/macOS/Boundery Client.dmg" | grep /Volumes/ | cut -f3`
 
       echo " ****** Run tests *******"
-      dd if=/dev/zero bs=512 count=2880 of=/tmp/msdos.img 2>&1
-      DEV=`hdid -nomount /tmp/msdos.img`
-      newfs_msdos -v BOUNDERYTST $DEV 2>&1
-      hdiutil detach $DEV -force
-      DEV=`hdid /tmp/msdos.img | cut -d ' ' -f 1`
-
+      diskutil mount "BNDRY TEST" #No one is logged in, so we have to manually mount.
       sudo BOUNDERY_APP_TEST=1 "$VOL/Boundery Client.app/Contents/MacOS/Boundery Client"
       touch /vagrant/macOS/tests_passed
-
-      hdiutil detach $DEV -force
 
       echo " ****** Tests done, detaching .dmg *******"
       sudo hdiutil detach "$VOL" -force
