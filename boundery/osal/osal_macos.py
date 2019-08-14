@@ -18,7 +18,7 @@ def get_mounts():
             continue
         if not os.access(mnt, os.W_OK):
             continue
-        ret.append(mnt)
+        ret.append((mnt.split('/')[-1], mnt))
     return ret
 
 #osascript's elevate command does weird stuff to stdin/stdout, so we use a pair of fifos.

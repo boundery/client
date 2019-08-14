@@ -123,7 +123,7 @@ step1_thread = None
 @post('/step1')
 def step1_post():
     mount = request.forms.get('mount')
-    if mount not in osal.get_mounts():
+    if mount not in [ i[1] for i in osal.get_mounts() ]:
         raise Exception("Bad mountpoint from client!")
 
     #XXX This is busted if your ssid is actually '__other'
@@ -144,6 +144,7 @@ def step1_post():
 
     return template("step1_post")
 
+#XXX Handle errors here, and signal back to the client.
 def step1_handler(ssid, wifi_pw, mount):
     if "ZIPFILE" not in os.environ:
         r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)

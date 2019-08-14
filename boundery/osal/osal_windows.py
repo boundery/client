@@ -4,22 +4,37 @@ import sys, os, subprocess
 import site
 site.addsitedir(next(filter(lambda i: i.endswith('app_packages'), sys.path), ''))
 
-from ctypes import windll, create_unicode_buffer
+from ctypes import windll, create_unicode_buffer, sizeof, c_wchar_p
 
 from . import win32wifi
 import win32pipe, win32file, msvcrt
 
-#XXX Would be nice to get human-readable description as well...
 def get_mounts():
     DRIVE_REMOVABLE = 2
     DRIVE_CDROM = 5
-    buf = create_unicode_buffer(260)
-    count = windll.kernel32.GetLogicalDriveStringsW(len(buf)-1, buf)
+    buf = create_unicode_buffer(1024)
+    count = windll.kernel32.GetLogicalDriveStringsW(sizeof(buf)-1, buf)
     drives = buf[:count-1].split('\x00')
-    if os.environ.get("BOUNDERY_ENUM_FIXED", None):
-        return [i[:2] for i in drives if i[0] != 'C' and windll.kernel32.GetDriveTypeW(i) != DRIVE_CDROM]
-    else:
-        return [i[:2] for i in drives if windll.kernel32.GetDriveTypeW(i) == DRIVE_REMOVABLE]
+
+    ret = []
+    for drive in drives:
+        if os.environ.get("BOUNDERY_ENUM_FIXED", None):
+            if drive[0] == 'C' or windll.kernel32.GetDriveTypeW(drive) == DRIVE_CDROM:
+                continue
+        else:
+            if windll.kernel32.GetDriveTypeW(drive) != DRIVE_REMOVABLE:
+                continue
+        volume_name = create_unicode_buffer(1024)
+        fs_type = create_unicode_buffer(1024)
+        windll. kernel32.GetVolumeInformationW(c_wchar_p(drive),
+                                               volume_name, sizeof(volume_name)-1,
+                                               None, None, None,
+                                               fs_type, sizeof(fs_type)-1)
+        if fs_type.value != 'FAT':
+            continue
+        ret.append((volume_name.value, drive[:2]))
+
+    return ret
 
 class NPWrapper:
     def __init__(self, pipe):

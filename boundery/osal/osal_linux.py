@@ -12,11 +12,11 @@ def get_mounts():
                 continue
             mnt = mnt.replace('\\040', ' ').replace('\\011', '\t')
             mnt = mnt.replace('\\134', '\\').replace('\\012', '\n')
-            if mnt == "/" or mnt.startswith("/boot") or mnt.startswith("/run/user"):
+            if mnt == "/" or mnt.startswith("/boot"):
                 continue
             if not os.access(mnt, os.W_OK):
                 continue
-            ret.append(mnt)
+            ret.append((mnt.split('/')[-1], mnt))
     return ret
 
 #XXX Some fallback if pkexec isn't available?  sudo in a terminal?
