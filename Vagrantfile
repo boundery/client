@@ -36,6 +36,7 @@ Vagrant.configure("2") do |config|
 
     win.vm.box = "opentable/win-2012r2-standard-amd64-nocm"
     win.vm.network "forwarded_port", host: 33389, guest: 3389
+    win.ssh.extra_args = ['-oHostKeyAlgorithms=+ssh-dss']
 
     win.vm.provision "prep", type: "shell", inline: <<-SHELL
       echo " ****** Installing chocolatey ******"
