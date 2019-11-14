@@ -75,7 +75,7 @@
     <br>
     <div id="ssidlist">{{!ssidlist}}</div>
     <div>
-      <input type="radio" name="ssid" value="__other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
+      <input type="radio" name="ssid" value="__|other">Other <input class="hideshow" type="text" name="other_ssid" value=""><br>
     </div>
     <input type="radio" name="ssid" value="" required>None. I'm using wired ethernet.
   </div>

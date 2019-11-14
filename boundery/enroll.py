@@ -126,9 +126,9 @@ def step1_post():
     if mount not in [ i[1] for i in osal.get_mounts() ]:
         raise Exception("Bad mountpoint from client!")
 
-    #XXX This is busted if your ssid is actually '__other'
+    #XXX This is busted if your ssid is actually '__|other'
     ssid = request.forms.get("ssid").strip()
-    if ssid == "__other":
+    if ssid == "__|other":
         ssid = request.forms.get("other_ssid").strip()
     else:
         ssid = ssid[1:]
