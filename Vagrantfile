@@ -6,13 +6,13 @@ def add_usb_vdi(vb, machine)
   if not File.exist?(vdi)
     return
   end
-  id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
-  if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
-    vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
-  end
-  vb.customize ['storageattach', id, '--storagectl', 'BOUNDERYUSB',
-                '--port', 1, '--device', 0, '--type', 'hdd',
-                '--medium', vdi, '--hotpluggable', 'on', '--nonrotational', 'on']
+#  id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
+#  if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
+#    vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
+#  end
+#  vb.customize ['storageattach', id, '--storagectl', 'BOUNDERYUSB',
+#                '--port', 1, '--device', 0, '--type', 'hdd',
+#                '--medium', vdi, '--hotpluggable', 'on', '--nonrotational', 'on']
 end
 
 Vagrant.configure("2") do |config|
@@ -25,9 +25,19 @@ Vagrant.configure("2") do |config|
       #vb.gui = true
       vb.memory = "2048"
 
-      vb.customize ['modifyvm', :id, '--usb', 'on']
-      add_usb_vdi(vb, 'windows')
+      #vb.customize ['modifyvm', :id, '--usb', 'on']
+      #add_usb_vdi(vb, 'windows')
     end
+    win.vm.provider "libvirt" do |libvirt|
+      libvirt.memory = "2048"
+      libvirt.nic_model_type = "e1000"
+      libvirt.input :type => "tablet", :bus => "usb"
+
+      libvirt.storage :file, :bus => 'usb', :size => '256M', :device => 'sdb'
+    end
+
+    #We rely on explicit tar/untar in the Makefile instead of synced_folder.
+    win.vm.synced_folder ".", "/vagrant", disabled: true, type: "rsync", rsync__exclude: [".*"]
 
     win.vm.guest = :windows
     win.vm.communicator = "winrm"
@@ -53,9 +63,9 @@ Vagrant.configure("2") do |config|
       #dism.exe /online /enable-feature /featurename:NetFX3 /all
 
       echo " ****** Installing needed choco packages ******"
-      choco install --forcex86 -y python
+      choco install --forcex86 -y python --version 3.7.5
       choco install -y wixtoolset
-      choco install -y git
+      choco install -y git --params "/GitAndUnixToolsOnPath /NoGitLfs"
       refreshenv
 
       echo " ****** Setting up python venv ******"
@@ -66,6 +76,8 @@ Vagrant.configure("2") do |config|
       echo " ****** Installing briefcase ******"
       $env:PIP_DISABLE_PIP_VERSION_CHECK=1
       pip install briefcase
+
+      echo " ****** Prep done ******"
     SHELL
 
     win.vm.provision "build", type: "shell", run: "never", inline: <<-SHELL
@@ -74,28 +86,28 @@ Vagrant.configure("2") do |config|
       . venv\\Scripts\\activate.ps1
       $env:PIP_DISABLE_PIP_VERSION_CHECK=1
 
-      echo " ****** Copying source files ******"
-      rm -R -Fo client
-      mkdir client
-      cp -Ex .* \\vagrant\\* client
-      cp -R -Fo \\vagrant\\boundery client
-      cd client
+      cd \\vagrant
 
       echo " ****** Starting installer build ******"
       $env:PYTHONIOENCODING="utf-8"  #Workaround briefcase bug 179.
       python setup.py windows --build
 
-      echo " ****** Copying build artifacts ******"
-      mkdir -Fo \\vagrant\\windows
-      cp -Fo windows\\Boundery* \\vagrant\\windows
-
       echo " ****** Build done *******"
-      echo "" > \\vagrant\\windows\\builddone
     SHELL
     #XXX Package up into an exe (also with zerotier's .msi?):
     #https://www.firegiant.com/wix/tutorial/net-and-net/bootstrapping/
 
     win.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
+      #XXX error out if \\vagrant\windows\*.msi doesn't exist.
+      rm -Fo -ErrorAction SilentlyContinue \\vagrant\\windows\\tests_passed
+
+      echo " ****** Formatting target disk ******"
+      Get-Disk |
+      Where partitionstyle -eq 'raw' |
+      Initialize-Disk -PartitionStyle MBR -PassThru |
+      New-Partition -DriveLetter D -UseMaximumSize
+      Format-Volume D -FileSystem FAT32 -NewFileSystemLabel "BNDRY TEST" -Force -Confirm:$false
+
       echo " ****** Installing ZeroTier ******"
       choco install -y zerotier-one
 
@@ -105,7 +117,7 @@ Vagrant.configure("2") do |config|
       echo " ****** Run tests *******"
       cd "\\Program Files (x86)\\Boundery Client"
       $env:BOUNDERY_APP_TEST = '1'
-      $env:BOUNDERY_ENUM_FIXED = '1' #VirtualBox USB devices aren't removable.
+      $env:BOUNDERY_ENUM_FIXED = '1' #VirtualBox/libvirt USB devices aren't removable.
       & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
       echo "" > \\vagrant\\windows\\tests_passed
 

@@ -30,7 +30,7 @@ def get_mounts():
                                                volume_name, sizeof(volume_name)-1,
                                                None, None, None,
                                                fs_type, sizeof(fs_type)-1)
-        if fs_type.value != 'FAT':
+        if not fs_type.value.startswith('FAT'):
             continue
         ret.append((volume_name.value, drive[:2]))
 

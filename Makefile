@@ -1,3 +1,6 @@
+CLIENT_VER=0.0.1
+
+export VAGRANT_DEFAULT_PROVIDER=libvirt
 DOCKER=docker
 VAGRANT=vagrant
 
@@ -22,8 +25,8 @@ linux:
 	dd if=/dev/zero of=$@ bs=1024 count=10k
 	printf 'n\np\n1\n\n\nt\nc\nw\n' | fdisk $@
 	mformat -i$@@@1M -s32 -h64 -t9 -v"BNDRY TEST"
-.vagrant/vfat-windows.vdi: .vagrant/vfat.img
-	VBoxManage convertfromraw $< $@ --format vdi --uuid 00000000-4455-6677-8899-aabbccddeeff
+#.vagrant/vfat-windows.vdi: .vagrant/vfat.img
+#	VBoxManage convertfromraw $< $@ --format vdi --uuid 00000000-4455-6677-8899-aabbccddeeff
 .vagrant/vfat-macos.vdi: .vagrant/vfat.img
 	VBoxManage convertfromraw $< $@ --format vdi --uuid 11111111-4455-6677-8899-aabbccddeeff
 
@@ -31,15 +34,16 @@ linux:
 windows:
 	rm -rf windows
 	$(VAGRANT) up windows
+	tar cf - --xform 's,^,vagrant/,' `git ls-files` | \
+	  $(VAGRANT) ssh windows --no-tty -c 'rm -rf /c/vagrant; tar xf - -C /c'
 	$(VAGRANT) provision --provision-with build windows
-	while [ ! -f "windows/builddone" ]; do sleep 1; done
+	$(VAGRANT) ssh windows --no-tty -c 'tar cf - -C /c/vagrant windows' | tar xmf -
 	$(VAGRANT) halt windows
-.PHONY: windows-test #XXX Make this depend on the built .msi!
-windows-test: .vagrant/vfat-windows.vdi
-	rm -f windows/tests_passed
+.PHONY: windows-test
+windows-test: windows/Boundery\ Client-$(CLIENT_VER).msi
 	$(VAGRANT) up windows
 	$(VAGRANT) provision --provision-with test windows
-	[ -f windows/tests_passed ]
+	$(VAGRANT) ssh windows --no-tty -c "[ -f /c/vagrant/windows/tests_passed ]"
 	$(VAGRANT) halt windows
 .PHONY: windows-gui
 windows-gui:

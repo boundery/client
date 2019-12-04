@@ -198,7 +198,6 @@ def step1_handler(ssid, wifi_pw, mount):
         pass
     step1_thread.cur += 1
 
-
 @get('/step1_post_api1')
 def step1_post_api2():
     global step1_thread
