@@ -41,6 +41,9 @@ jobs:
 
     - name: Build installer (Windows)
       if: runner.os == 'Windows'
+      env:
+        #Workaround briefcase bug 179.
+        PYTHONIOENCODING: utf-8
       run: |
         python setup.py windows --build
     - name: Upload installer package (Windows)
