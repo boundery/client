@@ -4,8 +4,10 @@ on: [push]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v1
@@ -24,12 +26,26 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Build installer
+
+    - name: Build installer (Linux)
+      if: runner.os == 'Linux'
       run: |
         python setup.py linux --build
         tar zcf boundery-client-linux.tar.gz --xform 's,^linux,boundery-client,' linux
-    - name: Upload installer package
+    - name: Upload installer package (Linux)
+      if: runner.os == 'Linux'
       uses: actions/upload-artifact@v1
       with:
         name: boundery-client-linux
         path: boundery-client-linux.tar.gz
+
+    - name: Build installer (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        python setup.py windows --build
+    - name: Upload installer package (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v1
+      with:
+        name: boundery-client-windows
+        path: windows
