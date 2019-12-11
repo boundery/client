@@ -49,6 +49,7 @@ windows-test: windows/Boundery\ Client-$(CLIENT_VER).msi
 windows-gui:
 	$(VAGRANT) rdp windows -- /cert-ignore +clipboard
 
+#XXX Convert this to explicit tar instead of synced_folder?
 .PHONY: macos
 macos:
 	rm -rf macOS
@@ -56,9 +57,8 @@ macos:
 	$(VAGRANT) provision --provision-with build macos
 	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
 	$(VAGRANT) halt macos
-.PHONY: macos-test #XXX Make this depend on the built .dmg!
-macos-test: .vagrant/vfat-macos.vdi
-	rm -f macOS/tests_passed
+.PHONY: macos-test
+macos-test: macOS/Boundery\ Client.dmg .vagrant/vfat-macos.vdi
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with test macos
 	$(VAGRANT) ssh macos --no-tty -c "[ -f /vagrant/macOS/tests_passed ]"

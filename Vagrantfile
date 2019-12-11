@@ -142,6 +142,25 @@ Vagrant.configure("2") do |config|
 
       add_usb_vdi(vb, 'macos')
     end
+    mac.vm.provider "libvirt" do |libvirt|
+      libvirt.memory = "2048"
+
+      #libvirt.cpu_mode = "custom"
+      #libvirt.cpu_model = ""
+      libvirt.machine_type = "pc-q35-3.1"
+      libvirt.nic_model_type = "e1000"
+      libvirt.input :type => "tablet", :bus => "usb"
+
+      libvirt.loader = "/usr/share/qemu/OVMF.fd"
+      libvirt.qemuargs :value => "-device"
+      libvirt.qemuargs :value => "isa-applesmc,osk=ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
+      libvirt.qemuargs :value => "-smbios"
+      libvirt.qemuargs :value => "type=2"
+      libvirt.qemuargs :value => "-cpu"
+      libvirt.qemuargs :value => "Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,check"
+
+      #XXX USB storage attach.
+    end
 
     mac.vm.synced_folder ".", "/vagrant", type: "rsync",
                          rsync__exclude: [".*"], rsync__chown: false
@@ -174,6 +193,8 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Installing briefcase ******"
       pip install briefcase
+
+      echo " ****** Prep done ******"
     SHELL
 
     mac.vm.provision "build", type: "shell", run: "never", privileged: false, inline: <<-SHELL
@@ -196,6 +217,8 @@ Vagrant.configure("2") do |config|
     mac.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
       set -e
 
+      rm /vagrant/macOS/tests_passed
+
       echo " ****** Installing ZeroTier ******"
       if [ -z "`which zerotier-cli`" ]; then
          curl -# -L -o /tmp/zt.pkg https://download.zerotier.com/dist/ZeroTier%20One.pkg
@@ -211,12 +234,12 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Run tests *******"
       diskutil mount "BNDRY TEST" #No one is logged in, so we have to manually mount.
+      #XXX sudo here?  WTF?
       sudo BOUNDERY_APP_TEST=1 "$VOL/Boundery Client.app/Contents/MacOS/Boundery Client"
+      sudo hdiutil detach "$VOL" -force
       touch /vagrant/macOS/tests_passed
 
-      echo " ****** Tests done, detaching .dmg *******"
-      sudo hdiutil detach "$VOL" -force
-
+      echo " ****** Tests done *******"
     SHELL
   end
 end
