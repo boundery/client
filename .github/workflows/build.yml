@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -46,9 +46,22 @@ jobs:
         PYTHONIOENCODING: utf-8
       run: |
         python setup.py windows --build
+        copy windows\*.msi boundery-client-windows.msi
     - name: Upload installer package (Windows)
       if: runner.os == 'Windows'
       uses: actions/upload-artifact@v1
       with:
         name: boundery-client-windows
-        path: windows
+        path: boundery-client-windows.msi
+
+    - name: Build installer (MacOS)
+      if: runner.os == 'macOS'
+      run: |
+        python setup.py macos --build
+        cp macOS/*.dmg boundery-client-macos.dmg
+    - name: Upload installer package (MacOS)
+      if: runner.os == 'macOS'
+      uses: actions/upload-artifact@v1
+      with:
+        name: boundery-client-macos
+        path: boundery-client-macos.dmg
