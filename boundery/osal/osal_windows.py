@@ -40,9 +40,9 @@ class NPWrapper:
     def __init__(self, pipe):
         win32pipe.ConnectNamedPipe(pipe, None)
         self._pipe = pipe
-        self.stdin = open(msvcrt.open_osfhandle(pipe, os.O_WRONLY), 'w')
-        self.stdout = open(msvcrt.open_osfhandle(pipe, os.O_RDONLY), 'r')
-        self.stderr = open(msvcrt.open_osfhandle(pipe, os.O_RDONLY), 'r')
+        self.stdin = open(msvcrt.open_osfhandle(int(pipe), os.O_WRONLY), 'w')
+        self.stdout = open(msvcrt.open_osfhandle(int(pipe), os.O_RDONLY), 'r')
+        self.stderr = open(msvcrt.open_osfhandle(int(pipe), os.O_RDONLY), 'r')
 
     def wait(self, timeout = -1):
         #XXX Need to actually wait here?
