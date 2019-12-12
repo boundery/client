@@ -114,6 +114,8 @@ Vagrant.configure("2") do |config|
       echo " ****** Install client ******"
       Start-Process msiexec.exe -Wait -ArgumentList '/I "C:\\vagrant\\windows\\Boundery Client-0.0.1.msi" /qn'
 
+      refreshenv
+
       echo " ****** Run tests *******"
       cd "\\Program Files (x86)\\Boundery Client"
       $env:BOUNDERY_APP_TEST = '1'

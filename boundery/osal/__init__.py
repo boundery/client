@@ -10,10 +10,6 @@ else:
 
 def self_test():
     import logging
-    if os.name == 'nt':
-        zerotier = 'c:\Program Files (x86)\ZeroTier\One\zerotier-cli.bat'
-    else:
-        zerotier = 'zerotier-cli'
 
     try:
         print("Testing get_mounts")
@@ -26,10 +22,10 @@ def self_test():
 
         #XXX Just use --privsub directly here?
         print("Testing ZT info")
-        zt = sudo(zerotier, 'info')
+        zt = sudo('zerotier-cli', 'info')
         zt_out = zt.stdout.read()
         if not zt_out.startswith('200 info '):
-            logging.error("sudo failed: '%s'" % zt_out)
+            logging.error("sudo failed: '%s' '%s'" % (zt_out, zt.stderr.read()))
             return 20
 
         print("Testing get_ssids")
