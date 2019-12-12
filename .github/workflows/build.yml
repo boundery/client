@@ -53,6 +53,16 @@ jobs:
       with:
         name: boundery-client-windows
         path: boundery-client-windows.msi
+    - name: Run client Tests (Windows)
+      if: runner.os == 'Windows'
+      env:
+        BOUNDERY_APP_TEST: 1
+        BOUNDERY_ENUM_FIXED: 1
+      run: |
+        choco install -y zerotier-one
+        Start-Process msiexec.exe -Wait -ArgumentList '/I "C:\\vagrant\\windows\\Boundery Client-0.0.1.msi" /qn'
+        cd "\\Program Files (x86)\\Boundery Client"
+        & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
 
     - name: Build installer (MacOS)
       if: runner.os == 'macOS'
