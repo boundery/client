@@ -60,7 +60,7 @@ jobs:
         BOUNDERY_ENUM_FIXED: 1
       run: |
         choco install -y zerotier-one
-        Start-Process msiexec.exe -Wait -ArgumentList '/I "C:\\vagrant\\windows\\Boundery Client-0.0.1.msi" /qn'
+        Start-Process msiexec.exe -Wait -ArgumentList '/I "boundery-client-windows.msi" /qn'
         cd "\\Program Files (x86)\\Boundery Client"
         & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
 
