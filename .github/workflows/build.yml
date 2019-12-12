@@ -62,7 +62,7 @@ jobs:
         choco install -y zerotier-one
         Start-Process msiexec.exe -Wait -ArgumentList '/I "boundery-client-windows.msi" /qn'
         cd "C:\Program Files (x86)\Boundery Client"
-        & "C:\Program Files\Boundery Client\python\python.exe" app\start.py
+        & "C:\Program Files (x86)\Boundery Client\python\python.exe" app\start.py
 
     - name: Build installer (MacOS)
       if: runner.os == 'macOS'
