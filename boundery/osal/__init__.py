@@ -21,11 +21,11 @@ def self_test():
         #    return 10
 
         #XXX Just use --privsub directly here?
-        print("Testing ZT info")
-        zt = sudo('zerotier-cli', 'info')
-        zt_out = zt.stdout.read()
-        if not zt_out.startswith('200 info '):
-            logging.error("sudo failed: '%s' '%s'" % (zt_out, zt.stderr.read()))
+        print("Testing sudo")
+        sudo = sudo('net session')
+        sudo_out = sudo.stdout.read()
+        if not sudo_out.startswith('200 info '):
+            logging.error("sudo failed: '%s' '%s'" % (sudo_out, sudo.stderr.read()))
             return 20
 
         print("Testing get_ssids")
