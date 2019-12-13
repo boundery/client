@@ -22,11 +22,11 @@ def self_test():
 
         #XXX https://superuser.com/questions/667607/check-if-current-command-prompt-was-launched-as-the-administrator
         print("Testing sudo")
-        sudo = sudo('net session')
+        sudoproc = sudo('net session')
         #XXX Check return code?
-        sudo_out = sudo.stdout.read()
+        sudo_out = sudoproc.stdout.read()
         if not sudo_out.startswith('200 info '):
-            logging.error("sudo failed: '%s' '%s'" % (sudo_out, sudo.stderr.read()))
+            logging.error("sudo failed: '%s' '%s'" % (sudo_out, sudoproc.stderr.read()))
             return 20
 
         print("Testing get_ssids")
