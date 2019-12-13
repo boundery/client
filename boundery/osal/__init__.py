@@ -20,9 +20,10 @@ def self_test():
         #    logging.error("get_mounts failed: '%s'" % mounts)
         #    return 10
 
-        #XXX Just use --privsub directly here?
+        #XXX https://superuser.com/questions/667607/check-if-current-command-prompt-was-launched-as-the-administrator
         print("Testing sudo")
         sudo = sudo('net session')
+        #XXX Check return code?
         sudo_out = sudo.stdout.read()
         if not sudo_out.startswith('200 info '):
             logging.error("sudo failed: '%s' '%s'" % (sudo_out, sudo.stderr.read()))
@@ -31,8 +32,8 @@ def self_test():
         print("Testing get_ssids")
         get_ssids()
         print("Testing complete")
-    except:
-        logging.error("foo", exc_info=True)
+    except Exception as e:
+        logging.error("Exception: %s" % e, exc_info=True)
         return 99
 
 #XXX Get wifi password. Pypi has "ng" which claims to do so.
