@@ -3,10 +3,16 @@ import os, sys
 if os.name == "posix":
     if sys.platform.startswith("darwin"):
         from .osal_macos import *
+        sudo_test = ['cat', '/etc/sudoers']
+        sudo_expected = '#'
     else:
         from .osal_linux import *
+        sudo_test = ['cat', '/etc/gshadow']
+        sudo_expected = 'root:'
 else:
     from .osal_windows import *
+    sudo_test = ['net', 'session']
+    sudo_expected = 'There are no entries in the list.'
 
 def self_test():
     import logging
@@ -14,18 +20,14 @@ def self_test():
     try:
         print("Testing get_mounts")
         mounts = get_mounts()
-        #XXX Reenable this when we can make github actions fake a FAT drive.
-        print("XXX", mounts)
-        #if len(mounts) != 1 or mounts[0][0] != 'BNDRY TEST':
-        #    logging.error("get_mounts failed: '%s'" % mounts)
-        #    return 10
+        if len(mounts) != 1 or mounts[0][0] != 'BNDRY TEST':
+            logging.error("get_mounts failed: '%s'" % mounts)
+            return 10
 
-        #XXX https://superuser.com/questions/667607/check-if-current-command-prompt-was-launched-as-the-administrator
         print("Testing sudo")
-        sudoproc = sudo('net session')
-        #XXX Check return code?
+        sudoproc = sudo(*sudo_test)
         sudo_out = sudoproc.stdout.read()
-        if not sudo_out.startswith('200 info '):
+        if not sudo_out.startswith(sudo_expected):
             logging.error("sudo failed: '%s' '%s'" % (sudo_out, sudoproc.stderr.read()))
             return 20
 

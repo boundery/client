@@ -1,6 +1,6 @@
 CLIENT_VER=0.0.1
 
-export VAGRANT_DEFAULT_PROVIDER=libvirt
+#export VAGRANT_DEFAULT_PROVIDER=libvirt
 DOCKER=docker
 VAGRANT=vagrant
 
@@ -25,8 +25,8 @@ linux:
 	dd if=/dev/zero of=$@ bs=1024 count=10k
 	printf 'n\np\n1\n\n\nt\nc\nw\n' | fdisk $@
 	mformat -i$@@@1M -s32 -h64 -t9 -v"BNDRY TEST"
-#.vagrant/vfat-windows.vdi: .vagrant/vfat.img
-#	VBoxManage convertfromraw $< $@ --format vdi --uuid 00000000-4455-6677-8899-aabbccddeeff
+.vagrant/vfat-windows.vdi: .vagrant/vfat.img
+	VBoxManage convertfromraw $< $@ --format vdi --uuid 00000000-4455-6677-8899-aabbccddeeff
 .vagrant/vfat-macos.vdi: .vagrant/vfat.img
 	VBoxManage convertfromraw $< $@ --format vdi --uuid 11111111-4455-6677-8899-aabbccddeeff
 
@@ -40,7 +40,7 @@ windows:
 	$(VAGRANT) ssh windows --no-tty -c 'tar cf - -C /c/vagrant windows' | tar xmf -
 	$(VAGRANT) halt windows
 .PHONY: windows-test
-windows-test: windows/Boundery\ Client-$(CLIENT_VER).msi
+windows-test: windows/Boundery\ Client-$(CLIENT_VER).msi .vagrant/vfat-windows.vdi
 	$(VAGRANT) up windows
 	$(VAGRANT) provision --provision-with test windows
 	$(VAGRANT) ssh windows --no-tty -c "[ -f /c/vagrant/windows/tests_passed ]"

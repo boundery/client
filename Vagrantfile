@@ -6,13 +6,13 @@ def add_usb_vdi(vb, machine)
   if not File.exist?(vdi)
     return
   end
-#  id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
-#  if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
-#    vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
-#  end
-#  vb.customize ['storageattach', id, '--storagectl', 'BOUNDERYUSB',
-#                '--port', 1, '--device', 0, '--type', 'hdd',
-#                '--medium', vdi, '--hotpluggable', 'on', '--nonrotational', 'on']
+  id = File.read(".vagrant/machines/#{machine}/virtualbox/id")
+  if `VBoxManage showvminfo #{id} --machinereadable | egrep '^storagecontrollername[0-9]+="BOUNDERYUSB"$'`.length <= 0
+    vb.customize ['storagectl', id, '--name', 'BOUNDERYUSB', '--add', 'usb', '--controller', 'USB']
+  end
+  vb.customize ['storageattach', id, '--storagectl', 'BOUNDERYUSB',
+                '--port', 1, '--device', 0, '--type', 'hdd',
+                '--medium', vdi, '--hotpluggable', 'on', '--nonrotational', 'on']
 end
 
 Vagrant.configure("2") do |config|
@@ -25,8 +25,8 @@ Vagrant.configure("2") do |config|
       #vb.gui = true
       vb.memory = "2048"
 
-      #vb.customize ['modifyvm', :id, '--usb', 'on']
-      #add_usb_vdi(vb, 'windows')
+      vb.customize ['modifyvm', :id, '--usb', 'on']
+      add_usb_vdi(vb, 'windows')
     end
     win.vm.provider "libvirt" do |libvirt|
       libvirt.memory = "2048"
@@ -101,12 +101,12 @@ Vagrant.configure("2") do |config|
       #XXX error out if \\vagrant\windows\*.msi doesn't exist.
       rm -Fo -ErrorAction SilentlyContinue \\vagrant\\windows\\tests_passed
 
-      echo " ****** Formatting target disk ******"
-      Get-Disk |
-      Where partitionstyle -eq 'raw' |
-      Initialize-Disk -PartitionStyle MBR -PassThru |
-      New-Partition -DriveLetter D -UseMaximumSize
-      Format-Volume D -FileSystem FAT32 -NewFileSystemLabel "BNDRY TEST" -Force -Confirm:$false
+      #echo " ****** Formatting target disk ******"
+      #Get-Disk |
+      #Where partitionstyle -eq 'raw' |
+      #Initialize-Disk -PartitionStyle MBR -PassThru |
+      #New-Partition -DriveLetter D -UseMaximumSize
+      #Format-Volume D -FileSystem FAT32 -NewFileSystemLabel "BNDRY TEST" -Force -Confirm:$false
 
       echo " ****** Installing ZeroTier ******"
       choco install -y zerotier-one
