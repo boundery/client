@@ -59,12 +59,12 @@ jobs:
         BOUNDERY_APP_TEST: 1
         BOUNDERY_ENUM_FIXED: 1
       run: |
-        choco install -y zerotier-one
         Start-Process msiexec.exe -Wait -ArgumentList '/I "boundery-client-windows.msi" /qn'
         refreshenv
-        echo XXX $env:PATH
         cd "C:\Program Files (x86)\Boundery Client"
-        & "C:\Program Files (x86)\Boundery Client\python\python.exe" app\start.py
+        #XXX Just install for now, UAC doesn't seem to work on github's windows, and
+        #    no USB/SDCard storage is available.
+        #& "C:\Program Files (x86)\Boundery Client\python\python.exe" app\start.py
 
     - name: Build installer (MacOS)
       if: runner.os == 'macOS'
