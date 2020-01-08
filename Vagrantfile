@@ -176,8 +176,15 @@ Vagrant.configure("2") do |config|
         -configure -allowAccessFor -allUsers \
         -configure -restart -agent -privs -all
 
+      echo " ****** Enabling Autologin ******"
+      #XXX May not be needed thanks to BOUNDERY_VAGRANT_PW=1
+      #https://github.com/timsutton/osx-vm-templates/blob/master/scripts/autologin.sh
+      echo -e -n '\x0b\xe8\x35\x51\xb3\xd2\xa9\xea\xc4\x7f\x76\x0e' | sudo tee /etc/kcpassword > /dev/null
+      sudo chmod 0600 /etc/kcpassword
+      sudo /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow autoLoginUser vagrant
+
       echo " ****** Installing git ******"
-      curl -# -L -o /tmp/git.dmg https://sourceforge.net/projects/git-osx-installer/files/git-2.22.0-intel-universal-mavericks.dmg/download?use_mirror=autoselect
+      curl -# -L -o /tmp/git.dmg "https://sourceforge.net/projects/git-osx-installer/files/git-2.22.0-intel-universal-mavericks.dmg/download?use_mirror=autoselect"
       VOL=`sudo hdiutil attach /tmp/git.dmg | grep /Volumes/ | cut -f3`
       sudo installer -pkg "$VOL"/git-*.pkg -target /
       sudo hdiutil detach "$VOL"
@@ -188,6 +195,17 @@ Vagrant.configure("2") do |config|
       sudo installer -pkg /tmp/python3.pkg -target /
       rm /tmp/python3.pkg
 
+      echo " ****** Installing Xcode command line tools ******"
+      #https://apple.stackexchange.com/questions/107307/how-can-i-install-the-command-line-tools-completely-from-the-command-line
+      touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+      PROD=$(softwareupdate -l |
+             grep "\*.*Command Line" |
+             head -n 1 | awk -F"*" '{print $2}' |
+             sed -e 's/^ *//' |
+             tr -d '\n')
+      softwareupdate -i "$PROD" --verbose
+      rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+
       echo " ****** Setting up python venv ******"
       python3 -m venv venv
       . venv/bin/activate
@@ -195,6 +213,8 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Installing briefcase ******"
       pip install briefcase
+      #XXX Bug in briefcase 0.2.10 https://github.com/beeware/briefcase/issues/295
+      sed -i '' 's/xcodebuild/true/1' /Users/vagrant/venv/lib/python3.7/site-packages/briefcase/macos.py
 
       echo " ****** Prep done ******"
     SHELL
@@ -219,7 +239,7 @@ Vagrant.configure("2") do |config|
     mac.vm.provision "test", type: "shell", run: "never", privileged: false, inline: <<-SHELL
       set -e
 
-      rm /vagrant/macOS/tests_passed
+      rm -f /vagrant/macOS/tests_passed
 
       echo " ****** Installing ZeroTier ******"
       if [ -z "`which zerotier-cli`" ]; then
@@ -236,8 +256,7 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Run tests *******"
       diskutil mount "BNDRY TEST" #No one is logged in, so we have to manually mount.
-      #XXX sudo here?  WTF?
-      sudo BOUNDERY_APP_TEST=1 "$VOL/Boundery Client.app/Contents/MacOS/Boundery Client"
+      BOUNDERY_APP_TEST=1 BOUNDERY_USE_VAGRANT_PW=1 "$VOL/Boundery Client.app/Contents/MacOS/Boundery Client"
       sudo hdiutil detach "$VOL" -force
       touch /vagrant/macOS/tests_passed
 

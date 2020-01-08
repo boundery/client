@@ -39,6 +39,8 @@ def sudo(cmd, *args):
 
     #XXX Hack: we replace ' ' with '?' because I couldn't get osascript quoting right.
     osascript = r"""do shell script "%s" with prompt "Create private networks" with administrator privileges""" % scriptname.replace(' ', '?')
+    if os.environ.get('BOUNDERY_USE_VAGRANT_PW', '') == '1':
+        osascript += ' user name "vagrant" password "vagrant"'
 
     topriv = os.path.join(boundery_dir, "topriv")
     frompriv = os.path.join(boundery_dir, "frompriv")
