@@ -1,6 +1,5 @@
 CLIENT_VER=0.0.1
 
-#export VAGRANT_DEFAULT_PROVIDER=libvirt
 DOCKER=docker
 VAGRANT=vagrant
 

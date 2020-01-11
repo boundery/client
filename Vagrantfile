@@ -28,13 +28,6 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--usb', 'on']
       add_usb_vdi(vb, 'windows')
     end
-    win.vm.provider "libvirt" do |libvirt|
-      libvirt.memory = "2048"
-      libvirt.nic_model_type = "e1000"
-      libvirt.input :type => "tablet", :bus => "usb"
-
-      libvirt.storage :file, :bus => 'usb', :size => '256M', :device => 'sdb'
-    end
 
     #We rely on explicit tar/untar in the Makefile instead of synced_folder.
     win.vm.synced_folder ".", "/vagrant", disabled: true, type: "rsync", rsync__exclude: [".*"]
@@ -101,13 +94,6 @@ Vagrant.configure("2") do |config|
       #XXX error out if \\vagrant\windows\*.msi doesn't exist.
       rm -Fo -ErrorAction SilentlyContinue \\vagrant\\windows\\tests_passed
 
-      #echo " ****** Formatting target disk ******"
-      #Get-Disk |
-      #Where partitionstyle -eq 'raw' |
-      #Initialize-Disk -PartitionStyle MBR -PassThru |
-      #New-Partition -DriveLetter D -UseMaximumSize
-      #Format-Volume D -FileSystem FAT32 -NewFileSystemLabel "BNDRY TEST" -Force -Confirm:$false
-
       echo " ****** Installing ZeroTier ******"
       choco install -y zerotier-one
 
@@ -143,25 +129,6 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--usbehci', 'off']
 
       add_usb_vdi(vb, 'macos')
-    end
-    mac.vm.provider "libvirt" do |libvirt|
-      libvirt.memory = "2048"
-
-      #libvirt.cpu_mode = "custom"
-      #libvirt.cpu_model = ""
-      libvirt.machine_type = "pc-q35-3.1"
-      libvirt.nic_model_type = "e1000"
-      libvirt.input :type => "tablet", :bus => "usb"
-
-      libvirt.loader = "/usr/share/qemu/OVMF.fd"
-      libvirt.qemuargs :value => "-device"
-      libvirt.qemuargs :value => "isa-applesmc,osk=ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
-      libvirt.qemuargs :value => "-smbios"
-      libvirt.qemuargs :value => "type=2"
-      libvirt.qemuargs :value => "-cpu"
-      libvirt.qemuargs :value => "Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+pcid,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,check"
-
-      #XXX USB storage attach.
     end
 
     mac.vm.synced_folder ".", "/vagrant", type: "rsync",
