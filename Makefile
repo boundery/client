@@ -11,6 +11,8 @@ linux:
 	$(DOCKER) run -it --rm --user $$(id -u):$$(id -g) \
 	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-linux \
 	  python3 setup.py linux --build
+	tar zcvf linux/boundery-linux-client.tar.gz --xform 's,^linux/,boundery-linux-client/,' \
+	  linux/app* linux/Boundery*
 
 #.PHONY: android
 #android:
