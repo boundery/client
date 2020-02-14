@@ -177,11 +177,6 @@ def step1_handler(ssid, wifi_pw, mount):
             step1_thread.cur = 50 + (bytes_written / num_bytes) * 50
     bio.close()
 
-    with open(os.path.join(mount, "pairingkey"), 'wb') as f:
-        get_subkey("throwaway") #Make sure the key is loaded.
-        f.write(standard_b64decode(get_from_datadir("pairingkey")))
-    step1_thread.cur += 1
-
     if len(ssid) > 0:
         with open(os.path.join(mount, "wifi.txt"), 'w') as f:
             #XXX Verify that no-pw wifi networks work.
@@ -197,6 +192,11 @@ def step1_handler(ssid, wifi_pw, mount):
         os.remove(os.path.join(mount, "apikey"))
     except FileNotFoundError:
         pass
+    step1_thread.cur += 1
+
+    with open(os.path.join(mount, "pairingkey"), 'wb') as f:
+        get_subkey("throwaway") #Make sure the key is loaded.
+        f.write(standard_b64decode(get_from_datadir("pairingkey")))
     step1_thread.cur += 1
 
 @get('/step1_post_api1')
