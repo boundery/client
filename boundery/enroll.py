@@ -147,7 +147,8 @@ def step1_post():
 #XXX Handle errors here, and signal back to the client.
 def step1_handler(ssid, wifi_pw, mount):
     if "ZIPFILE" not in os.environ:
-        r = requests.get(CENTRAL_URL + "/static/images/rpi3.zip", stream=True)
+        url = CENTRAL_URL + "/static/images/%s.zip" % os.environ.get('ZIPFILE_NAME', 'rpi3')
+        r = requests.get(url, stream=True)
         bio = io.BytesIO()
         zip_length = r.headers.get('content-length')
         if zip_length is None:
