@@ -40,7 +40,7 @@
         setTimeout(poll1, 1000);
       }
     };
-    xhr.open("GET", "/step1_post_api1", true);
+    xhr.open("GET", "/step1_post_poll", true);
     xhr.send();
   }
   window.onload = poll1();

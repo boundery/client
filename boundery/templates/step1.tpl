@@ -103,7 +103,7 @@
         setTimeout(poll1, 1000);
       }
     };
-    xhr.open("GET", "/step1_api1", true);
+    xhr.open("GET", "/mounts", true);
     xhr.send();
   }
   function poll2() {
@@ -119,7 +119,7 @@
         setTimeout(poll2, 5000);
       }
     };
-    xhr.open("GET", "/step1_api2", true);
+    xhr.open("GET", "/ssids", true);
     xhr.send();
   }
   function poll_all() {

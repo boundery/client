@@ -93,16 +93,16 @@ def test_elevate():
 @get('/')
 @get('/step1')
 def step1():
-    return template("step1", { "mountlist": step1_api1(), "ssidlist": step1_api2() })
+    return template("step1", { "mountlist": mounts(), "ssidlist": ssids() })
 
-@get('/step1_api1')
-def step1_api1():
+@get('/mounts')
+def mounts():
     #XXX Emit a useful message if there are no mounts!
-    return template("step1_api1", { "mounts": osal.get_mounts() })
+    return template("mounts", { "mounts": osal.get_mounts() })
 
 ssid_dict = {}
-@get('/step1_api2')
-def step1_api2():
+@get('/ssids')
+def ssids():
     global ssid_dict
     for ssid in osal.get_ssids(): #(is_connected, signal, name)
         if len(ssid[2].strip()) == 0:
@@ -117,7 +117,7 @@ def step1_api2():
 
     ssids.sort(key=lambda i: (i[0], i[1]), reverse=True)
     ssids = [ ("%s (signal %s)" % (ssid[2], ssid[1]), ssid[2], ssid[0]) for ssid in ssids ]
-    return template("step1_api2", { "ssids": ssids })
+    return template("ssids", { "ssids": ssids })
 
 step1_thread = None
 @post('/step1')
@@ -199,8 +199,8 @@ def step1_handler(ssid, wifi_pw, mount):
         f.write(standard_b64decode(get_from_datadir("pairingkey")))
     step1_thread.cur += 1
 
-@get('/step1_post_api1')
-def step1_post_api2():
+@get('/step1_post_poll')
+def step1_post_poll():
     global step1_thread
     if step1_thread.cur == step1_thread.max:
         step1_thread.join()
