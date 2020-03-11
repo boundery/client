@@ -3,13 +3,15 @@ CLIENT_VER=0.0.1
 DOCKER=docker
 VAGRANT=vagrant
 
+#XXX Add real deps/targets.
+
 .PHONY: linux
 linux: DOCKER_EXTRA=$(shell [ -L build ] && P=$$(readlink build) && echo -v $$P/:$$P )
 linux:
 	rm -rf linux
 	$(DOCKER) build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) \
 	  -t boundery-client-linux -f ./docker/Dockerfile.linux ./docker
-	$(DOCKER) run -it --rm --user $$(id -u):$$(id -g) \
+	$(DOCKER) run --rm --user $$(id -u):$$(id -g) \
 	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-linux \
 	  python3 setup.py linux --build
 	sed -i 's/$$(readlink -f "$$0")/"$$(readlink -f "$$0")"/1' linux/Boundery\ Client #XXX Bug workaround.
@@ -21,7 +23,7 @@ linux:
 #	rm -rf android
 #	$(DOCKER) build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) \
 #	  -t boundery-client-android -f ./docker/Dockerfile.android ./docker
-#	$(DOCKER) run -it --rm --user $$(id -u):$$(id -g) \
+#	$(DOCKER) run --rm --user $$(id -u):$$(id -g) \
 #	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-android \
 #	  /bin/sh -c "python3 setup.py android && python3 setup.py android --build"
 
