@@ -68,7 +68,7 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Installing briefcase ******"
       $env:PIP_DISABLE_PIP_VERSION_CHECK=1
-      pip install briefcase
+      pip install 'briefcase<0.3'
 
       echo " ****** Prep done ******"
     SHELL
@@ -179,7 +179,7 @@ Vagrant.configure("2") do |config|
       export PIP_DISABLE_PIP_VERSION_CHECK=1
 
       echo " ****** Installing briefcase ******"
-      pip install briefcase
+      pip install 'briefcase<0.3'
       #XXX Bug in briefcase 0.2.10 https://github.com/beeware/briefcase/issues/295
       sed -i '' 's/xcodebuild/true/1' /Users/vagrant/venv/lib/python3.7/site-packages/briefcase/macos.py
 

@@ -9,7 +9,7 @@ RUN    apt-get update \
         pkg-config git build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN    pip3 install briefcase
+RUN    pip3 install 'briefcase<0.3'
 
 #Create a user to map the host user to.
 RUN    groupadd -o -g ${GID} build \

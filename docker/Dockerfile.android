@@ -27,7 +27,7 @@ RUN    yes | sdkmanager --licenses \
            "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2" \
            "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 
-RUN    pip3 install briefcase
+RUN    pip3 install 'briefcase<0.3'
 
 #Create a user to map the host user to.
 RUN    groupadd -o -g ${GID} build \
