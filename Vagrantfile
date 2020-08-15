@@ -42,6 +42,9 @@ Vagrant.configure("2") do |config|
     win.ssh.extra_args = ['-oHostKeyAlgorithms=+ssh-dss']
 
     win.vm.provision "prep", type: "shell", inline: <<-SHELL
+      echo " ****** Enabling TLS1.2 ******"
+      [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
       echo " ****** Installing chocolatey ******"
       if (!(Test-Path "$env:SystemDrive\\ProgramData\\Chocolatey\\bin")) {
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
