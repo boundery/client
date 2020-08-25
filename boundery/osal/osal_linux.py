@@ -1,4 +1,4 @@
-import os, subprocess
+import sys, os, subprocess
 
 def get_mounts():
     #XXX Check for /sys/sda/sdd/removable?
@@ -16,15 +16,18 @@ def get_mounts():
                 continue
             if not os.access(mnt, os.W_OK):
                 continue
+            #XXX Maybe include the LABEL in the first, human readable element?
             ret.append((mnt.split('/')[-1], mnt))
     return ret
 
 #XXX Some fallback if pkexec isn't available?  sudo in a terminal?
 def sudo(cmd, *args):
-    return subprocess.Popen(["pkexec", cmd, *args],
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                stdin=subprocess.PIPE,
-                                bufsize=1, universal_newlines=True)
+    fullargs = [ '/bin/sh', '-c', "PYTHONPATH='%s' '%s' %s" %
+                 (':'.join(sys.path), cmd, ' '.join(["'%s'" % a for a in args ]))]
+    return subprocess.Popen(["pkexec", *fullargs],
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            stdin=subprocess.PIPE,
+                            bufsize=1, universal_newlines=True)
 
 def get_zerotier_token_path():
     return "/var/lib/zerotier-one/authtoken.secret"

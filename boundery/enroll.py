@@ -30,7 +30,8 @@ def do_priv(cmd):
         privsub = osal.sudo(sys.executable, os.path.abspath(__main__.__file__), "--privsub")
         line = privsub.stdout.readline().strip() #XXX timeout?
         if line != "ok":
-            raise Exception("privsub startup failed: '%s'" % line)
+            raise Exception("privsub startup failed:\n%s\n%s" %
+                            (line, ''.join(privsub.stdout.readlines())[:-1]))
 
     privsub.stdin.write(cmd + '\n')
     privsub.stdin.flush()
