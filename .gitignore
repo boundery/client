@@ -58,12 +58,12 @@ var/
 .idea_modules/
 
 # Briefcase build directories
-iOS/
-macOS/
-windows/
-android/
-linux/
-django/
+/iOS/
+/macOS/
+/windows/
+/android/
+/linux/
+/django/
 
 # Vagrant stuff
 .vagrant

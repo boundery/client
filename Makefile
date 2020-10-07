@@ -2,18 +2,14 @@ CLIENT_VER=0.0.1
 
 DOCKER=docker
 VAGRANT=vagrant
+CONTAINER_BUILD=script/container-build
 
 #XXX Add real deps/targets.
 
 .PHONY: linux
-linux: DOCKER_EXTRA=$(shell [ -L build ] && P=$$(readlink build) && echo -v $$P/:$$P )
 linux:
 	rm -rf linux
-	$(DOCKER) build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) \
-	  -t boundery-client-linux -f ./docker/Dockerfile.linux ./docker
-	$(DOCKER) run --rm --user $$(id -u):$$(id -g) \
-	  -v `pwd`/:/home/build/src $(DOCKER_EXTRA) boundery-client-linux \
-	  python3 setup.py linux --build
+	$(CONTAINER_BUILD) -s linux -- python3 setup.py linux --build
 	sed -i 's/$$(readlink -f "$$0")/"$$(readlink -f "$$0")"/1' linux/Boundery\ Client #XXX Bug workaround.
 	tar zcvf linux/boundery-linux-client.tar.gz --xform 's,^linux/,boundery-linux-client/,' \
 	  linux/app* linux/Boundery*
