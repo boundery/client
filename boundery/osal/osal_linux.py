@@ -38,7 +38,7 @@ def get_ssids():
     p = subprocess.run(["nmcli", "-t", "-f", "mode,active,signal,ssid", "dev", "wifi"],
                            stdout=subprocess.PIPE, universal_newlines=True)
     ssids = []
-    for ssid in p.stdout.split():
+    for ssid in p.stdout.splitlines():
         ssid = ssid.split(':', 3)
         if ssid[0] != "Infra":
             continue
