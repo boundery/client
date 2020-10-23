@@ -1,4 +1,5 @@
 build-essential
+docker-ce-cli
 git
 pkg-config
 python3-dev

@@ -9,10 +9,9 @@ CONTAINER_BUILD=script/container-build
 .PHONY: linux
 linux:
 	rm -rf linux
-	$(CONTAINER_BUILD) -s linux -- python3 setup.py linux --build
-	sed -i 's/$$(readlink -f "$$0")/"$$(readlink -f "$$0")"/1' linux/Boundery\ Client #XXX Bug workaround.
+	$(CONTAINER_BUILD) -s linux -- briefcase package linux appimage
 	tar zcvf linux/boundery-linux-client.tar.gz --xform 's,^linux/,boundery-linux-client/,' \
-	  linux/app* linux/Boundery*
+	  linux/*.AppImage
 
 #.PHONY: android
 #android:
@@ -61,7 +60,7 @@ macos:
 	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
 	$(VAGRANT) halt macos
 .PHONY: macos-test
-macos-test: macOS/Boundery\ Client.dmg .vagrant/vfat-macos.vdi
+macos-test: macOS/Boundery\ Client-$(CLIENT_VER).dmg .vagrant/vfat-macos.vdi
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with test macos
 	$(VAGRANT) ssh macos --no-tty -c "[ -f /vagrant/macOS/tests_passed ]"

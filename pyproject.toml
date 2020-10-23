@@ -1,0 +1,47 @@
+[build-system]
+requires = ["briefcase~=0.3"]
+
+[tool.briefcase]
+project_name = "Boundery Client"
+bundle       = "me.boundery"
+version      = "0.0.1"
+license      = 'GNU General Public License v3 or later (GPLv3+)'
+author       = "Nolan Leake"
+author_email = "nolan@sigbus.net"
+
+[tool.briefcase.app.boundery]
+formal_name = "Boundery Client"
+description = "Client for the Boundery home server"
+requires = [
+    "appdirs",
+    "bottle",
+    "hkdf",
+    "PyNaCl",
+    "requests",
+    "waitress",
+]
+sources = [
+    "boundery",
+]
+
+[tool.briefcase.app.boundery.macOS]
+requires = [
+    "rubicon-objc",
+]
+
+[tool.briefcase.app.boundery.linux]
+requires = [
+]
+
+[tool.briefcase.app.boundery.windows]
+requires = [
+    "pywin32",
+]
+
+[tool.briefcase.app.boundery.iOS]
+requires = [
+]
+
+[tool.briefcase.app.boundery.android]
+requires = [
+]

@@ -71,7 +71,8 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Installing briefcase ******"
       $env:PIP_DISABLE_PIP_VERSION_CHECK=1
-      pip install 'briefcase<0.3'
+      python -m pip install --upgrade pip
+      pip install 'briefcase~=0.3'
 
       echo " ****** Prep done ******"
     SHELL
@@ -86,7 +87,7 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Starting installer build ******"
       $env:PYTHONIOENCODING="utf-8"  #Workaround briefcase bug 179.
-      python setup.py windows --build
+      briefcase package windows msi
 
       echo " ****** Build done *******"
     SHELL
@@ -106,10 +107,10 @@ Vagrant.configure("2") do |config|
       refreshenv
 
       echo " ****** Run tests *******"
-      cd "\\Program Files (x86)\\Boundery Client"
+      cd "\\Users\\vagrant\\AppData\\Local\\Programs\\Boundery Client"
       $env:BOUNDERY_APP_TEST = '1'
       $env:BOUNDERY_ENUM_FIXED = '1' #VirtualBox/libvirt USB devices aren't removable.
-      & "\\Program Files (x86)\\Boundery Client\\python\\python.exe" app\\start.py
+      & "\\Users\\vagrant\\AppData\\Local\\Programs\\Boundery Client\\python\\python.exe" -m boundery
       echo "" > \\vagrant\\windows\\tests_passed
 
       echo " ****** Tests done *******"
@@ -187,9 +188,7 @@ Vagrant.configure("2") do |config|
       export PIP_DISABLE_PIP_VERSION_CHECK=1
 
       echo " ****** Installing briefcase ******"
-      pip install 'briefcase<0.3'
-      #XXX Bug in briefcase 0.2.10 https://github.com/beeware/briefcase/issues/295
-      sed -i '' 's/xcodebuild/true/1' /Users/vagrant/venv/lib/python3.7/site-packages/briefcase/macos.py
+      pip install 'briefcase~=0.3'
 
       echo " ****** Prep done ******"
     SHELL
@@ -206,7 +205,7 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Starting installer build ******"
       rm -rf macOS
-      python setup.py macos --build
+      briefcase package macos dmg --no-sign
 
       echo " ****** Build done *******"
     SHELL
@@ -227,7 +226,7 @@ Vagrant.configure("2") do |config|
       cd /vagrant
 
       echo " ****** Install client ******"
-      VOL=`sudo hdiutil attach "/vagrant/macOS/Boundery Client.dmg" | grep /Volumes/ | cut -f3`
+      VOL=`sudo hdiutil attach "/vagrant/macOS/Boundery Client-0.0.1.dmg" | grep /Volumes/ | cut -f3`
 
       echo " ****** Run tests *******"
       diskutil mount "BNDRY TEST" #No one is logged in, so we have to manually mount.

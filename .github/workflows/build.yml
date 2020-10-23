@@ -18,7 +18,7 @@ jobs:
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install 'briefcase<0.3'
+        pip install 'briefcase~=0.3'
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -30,7 +30,7 @@ jobs:
     - name: Build installer (Linux)
       if: runner.os == 'Linux'
       run: |
-        python setup.py linux --build
+        briefcase package linux appimage
         tar zcf boundery-client-linux.tar.gz --xform 's,^linux,boundery-client,' linux
     - name: Upload installer package (Linux)
       if: runner.os == 'Linux'
@@ -45,7 +45,7 @@ jobs:
         #Workaround briefcase bug 179.
         PYTHONIOENCODING: utf-8
       run: |
-        python setup.py windows --build
+        briefcase package windows msi
         copy windows\*.msi boundery-client-windows.msi
     - name: Upload installer package (Windows)
       if: runner.os == 'Windows'
@@ -61,15 +61,15 @@ jobs:
       run: |
         Start-Process msiexec.exe -Wait -ArgumentList '/I "boundery-client-windows.msi" /qn'
         refreshenv
-        cd "C:\Program Files (x86)\Boundery Client"
+        cd "$HOME\AppData\Local\Programs\Boundery Client"
         #XXX Just install for now, UAC doesn't seem to work on github's windows, and
         #    no USB/SDCard storage is available.
-        #& "C:\Program Files (x86)\Boundery Client\python\python.exe" app\start.py
+        #& "$HOME\AppData\Local\Programs\Boundery Client\python\python.exe" -m boundery
 
     - name: Build installer (MacOS)
       if: runner.os == 'macOS'
       run: |
-        python setup.py macos --build
+        briefcase -v package macos dmg --no-sign
         cp macOS/*.dmg boundery-client-macos.dmg
     - name: Upload installer package (MacOS)
       if: runner.os == 'macOS'
