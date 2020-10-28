@@ -131,6 +131,11 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--usbxhci', 'off']
       vb.customize ['modifyvm', :id, '--usbehci', 'off']
 
+      #Workaround for AMD hosts
+      vb.customize ['setextradata', :id, 'VBoxInternal/CPUM/MSRs/MsrBiosSign/First', '0x0000008B']
+      vb.customize ['modifyvm', :id, '--cpu-profile', 'Intel Core i7-6700K']
+      vb.customize ['modifyvm', :id, '--cpuidset', '00000001', '000106a5', '00100800', '0098e3fd', 'bfebfbff']
+
       add_usb_vdi(vb, 'macos')
     end
 
