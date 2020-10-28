@@ -118,7 +118,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "macos", autostart: false do |mac|
     mac.vm.box = "jhcook/macos-sierra"
-    mac.vm.network "forwarded_port", host: 5900, guest: 5900
+    mac.vm.network "forwarded_port", host: 5909, guest: 5900
     #XXX Needed for ZT to actually work in VirtualBox:
     #mac.vm.network "public_network"
     #sudo networksetup -ordernetworkservices "Ethernet Adaptor (en1)" "Ethernet"
