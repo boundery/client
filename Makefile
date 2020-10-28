@@ -28,6 +28,7 @@ linux:
 #	  /bin/sh -c "python3 setup.py android && python3 setup.py android --build"
 
 .vagrant/vfat.img:
+	@mkdir -p .vagrant
 	dd if=/dev/zero of=$@ bs=1024 count=10k
 	printf 'n\np\n1\n\n\nt\nc\nw\n' | fdisk $@
 	mformat -i$@@@1M -s32 -h64 -t9 -v"BNDRY TEST"
