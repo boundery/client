@@ -1,8 +1,9 @@
 build-essential
 docker-ce-cli
 git
+libwebkit2gtk-4.0-dev
 pkg-config
-python3-dev
+python3.7-dev
 python3-pip
 python3-setuptools
 python3-wheel

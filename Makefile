@@ -3,15 +3,24 @@ CLIENT_VER=0.0.1
 DOCKER=docker
 VAGRANT=vagrant
 CONTAINER_BUILD=script/container-build
+# NB: The python version here (because it's used to run briefcase) also determines the python version used in
+# the linux appimage
+PYTHON=python3.7
 
 #XXX Add real deps/targets.
 
 .PHONY: linux
 linux:
 	rm -rf linux
-	$(CONTAINER_BUILD) -s linux -- briefcase package linux appimage
+	$(CONTAINER_BUILD) -s linux -- make MAKEFLAGS="$$MAKEFLAGS" linux-appimage
 	tar zcvf linux/boundery-linux-client.tar.gz --xform 's,^linux/,boundery-linux-client/,' \
-	  linux/*.AppImage
+	  linux/Boundery_Client-$(CLIENT_VER)-x86_64.AppImage
+
+.PHONY: linux-appimage
+linux-appimage:
+	mkdir -p linux/generated_src
+	ld -lwebkit2gtk-4.0 -o linux/generated_src/deps.so
+	$(PYTHON) -m briefcase package linux appimage
 
 #.PHONY: android
 #android:
@@ -71,7 +80,7 @@ macos-gui:
 
 .PHONY: dev
 dev:
-	@python3 -m boundery --debug --local
+	@$(PYTHON) -m boundery --debug --local
 
 .PHONY: check
 check:

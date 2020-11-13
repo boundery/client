@@ -30,8 +30,8 @@ jobs:
     - name: Build installer (Linux)
       if: runner.os == 'Linux'
       run: |
-        briefcase package linux appimage
-        tar zcf boundery-client-linux.tar.gz --xform 's,^linux,boundery-client,' linux
+        make linux
+        cp linux/boundery-linux-client.tar.gz boundery-client-linux.tar.gz
     - name: Upload installer package (Linux)
       if: runner.os == 'Linux'
       uses: actions/upload-artifact@v1

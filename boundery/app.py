@@ -13,10 +13,9 @@ import appdirs
 from bottle import route, run, static_file, TEMPLATE_PATH
 from collections import namedtuple
 from threading import Thread
-from boundery import settings
+from boundery import settings, ui
 
 #XXX Add some APIKEY between browser and this server.
-#XXX Add JS to make it quit the deamon when all browser tabs/windows are closed.  Also, timeout.
 
 POLL_INTERVAL = 0.5
 
@@ -40,6 +39,12 @@ def send_static(filename):
 def server_ok():
     return "ok"
 
+def serve():
+    if DEBUG:
+        run(host="localhost", port=settings.PORT, debug=True)
+    else:
+        run(host="localhost", port=settings.PORT, debug=False, server='waitress')
+
 def poll_ready():
     while True:
         try:
@@ -50,7 +55,6 @@ def poll_ready():
         except:
             pass
         time.sleep(POLL_INTERVAL)
-    webbrowser.open("http://localhost:%s/" % settings.PORT)
 
 def main():
     if os.environ.get('BOUNDERY_APP_TEST', '') == '1':
@@ -63,13 +67,16 @@ def main():
             sys.stdout = open(os.path.join(appdirs.user_data_dir("boundery"), "out.log"), 'w')
             sys.stderr = open(os.path.join(appdirs.user_data_dir("boundery"), "err.log"), 'w')
 
-        poller = Thread(target=poll_ready, name="poll_ready", daemon=True)
-        poller.start()
+        server = Thread(target=serve, name="api_server", daemon=True)
+        server.start()
 
-        if DEBUG:
-            run(host="localhost", port=settings.PORT, debug=True)
+        poll_ready()
+
+        if '--no-gui' in sys.argv or 'DISPLAY' not in os.environ:
+            webbrowser.open("http://localhost:%s/" % settings.PORT)
+            server.join()
         else:
-            run(host="localhost", port=settings.PORT, debug=False, server='waitress')
+            return ui.App(initial_url="http://localhost:%s/" % settings.PORT)
 
     #briefcase expects main to return an object w/ a function on win32.
     return namedtuple('Dummy', 'main_loop')(main_loop = lambda: None)

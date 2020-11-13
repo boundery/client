@@ -18,6 +18,7 @@ requires = [
     "hkdf",
     "PyNaCl",
     "requests",
+    "toga~=0.3.0.dev20",
     "waitress",
 ]
 sources = [
@@ -27,21 +28,37 @@ sources = [
 [tool.briefcase.app.boundery.macOS]
 requires = [
     "rubicon-objc",
+    "toga-cocoa~=0.3.0.dev20",
 ]
 
 [tool.briefcase.app.boundery.linux]
 requires = [
+    "toga-gtk~=0.3.0.dev20",
+]
+system_requires = [
+    "gir1.2-webkit-3.0",
+    "libcairo2-dev",
+    "libgirepository1.0-dev",
+    "libpango1.0-dev",
+    "librsvg2-dev",
+    "libwebkit2gtk-4.0-dev",
+]
+sources = [
+    "linux/generated_src",
 ]
 
 [tool.briefcase.app.boundery.windows]
 requires = [
     "pywin32",
+    "toga-winforms~=0.3.0.dev20",
 ]
 
 [tool.briefcase.app.boundery.iOS]
 requires = [
+    "toga-iOS~=0.3.0.dev20",
 ]
 
 [tool.briefcase.app.boundery.android]
 requires = [
+    "toga-android~=0.3.0.dev20",
 ]
