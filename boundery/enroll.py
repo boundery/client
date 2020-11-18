@@ -27,7 +27,13 @@ def do_priv(cmd):
     if not privsub:
         #XXX Handle cancelled sudo here.
         import __main__
-        privsub = osal.sudo(sys.executable, os.path.abspath(__main__.__file__), "--privsub")
+        if 'APPIMAGE' in os.environ:
+            # Execute the source AppImage as root, to work around the FUSE-mounted AppImage being inaccessible to root
+            # due to a FUSE security restriction.
+            executable = os.environ['APPIMAGE']
+        else:
+            executable = sys.executable
+        privsub = osal.sudo(executable, os.path.abspath(__main__.__file__), "--privsub")
         line = privsub.stdout.readline().strip() #XXX timeout?
         if line != "ok":
             raise Exception("privsub startup failed:\n%s\n%s" %
