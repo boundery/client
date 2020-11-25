@@ -47,6 +47,9 @@ sources = [
     "linux/generated_src",
 ]
 
+[tool.briefcase.app.boundery.linux.appimage]
+appimage_plugins = ["gtk"]
+
 [tool.briefcase.app.boundery.windows]
 requires = [
     "pywin32",

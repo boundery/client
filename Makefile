@@ -20,6 +20,7 @@ linux:
 linux-appimage:
 	mkdir -p linux/generated_src
 	ld -lwebkit2gtk-4.0 -o linux/generated_src/deps.so
+	cp -p script/linuxdeploy-plugin-gtk.sh linux/
 	$(PYTHON) -m briefcase package linux appimage
 
 #.PHONY: android
