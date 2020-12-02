@@ -126,5 +126,5 @@
     poll1()
     poll2()
   }
-  window.onload = poll_all();
+  window.onload = poll_all;
 </script>

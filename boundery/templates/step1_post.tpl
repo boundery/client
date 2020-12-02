@@ -43,5 +43,5 @@
     xhr.open("GET", "/step1_post_poll", true);
     xhr.send();
   }
-  window.onload = poll1();
+  window.onload = poll1;
 </script>

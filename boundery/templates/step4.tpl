@@ -58,5 +58,5 @@
     xhr.send();
   }
 
-  window.onload = poll1();
+  window.onload = poll1;
 </script>
