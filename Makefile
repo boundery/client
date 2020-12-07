@@ -37,15 +37,15 @@ windows:
 	rm -rf windows
 	$(VAGRANT) up windows
 	tar cf - --xform 's,^,vagrant/,' `git ls-files` | \
-	  $(VAGRANT) ssh windows --no-tty -c 'rm -rf /c/vagrant; tar xf - -C /c'
+	  $(VAGRANT) ssh windows --no-tty -c 'rm -rf /c/vagrant; tar xf - -C /c' -- -T
 	$(VAGRANT) provision --provision-with build windows
-	$(VAGRANT) ssh windows --no-tty -c 'tar cf - -C /c/vagrant windows' | tar xmf -
+	$(VAGRANT) ssh windows --no-tty -c 'tar cf - -C /c/vagrant windows' -- -T | tar xmf -
 	$(VAGRANT) halt windows
 .PHONY: windows-test
 windows-test: windows/Boundery\ Client-$(CLIENT_VER).msi .vagrant/vfat-windows.vdi
 	$(VAGRANT) up windows
 	$(VAGRANT) provision --provision-with test windows
-	$(VAGRANT) ssh windows --no-tty -c "[ -f /c/vagrant/windows/tests_passed ]"
+	$(VAGRANT) ssh windows --no-tty -c "[ -f /c/vagrant/windows/tests_passed ]" -- -T
 	$(VAGRANT) halt windows
 .PHONY: windows-gui
 windows-gui:
@@ -57,13 +57,13 @@ macos:
 	rm -rf macOS
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with build macos
-	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" | tar xf -
+	$(VAGRANT) ssh macos --no-tty -c "tar cf - -C /vagrant macOS" -- -T | tar xf -
 	$(VAGRANT) halt macos
 .PHONY: macos-test
 macos-test: macOS/Boundery\ Client-$(CLIENT_VER).dmg .vagrant/vfat-macos.vdi
 	$(VAGRANT) up macos
 	$(VAGRANT) provision --provision-with test macos
-	$(VAGRANT) ssh macos --no-tty -c "[ -f /vagrant/macOS/tests_passed ]"
+	$(VAGRANT) ssh macos --no-tty -c "[ -f /vagrant/macOS/tests_passed ]" -- -T
 	$(VAGRANT) halt macos
 .PHONY: macos-gui
 macos-gui:
