@@ -69,7 +69,7 @@ jobs:
     - name: Build installer (MacOS)
       if: runner.os == 'macOS'
       run: |
-        briefcase -v package macos dmg --no-sign
+        briefcase -v package macos --no-sign
         cp macOS/*.dmg boundery-client-macos.dmg
     - name: Upload installer package (MacOS)
       if: runner.os == 'macOS'

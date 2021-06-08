@@ -205,7 +205,7 @@ Vagrant.configure("2") do |config|
 
       echo " ****** Starting installer build ******"
       rm -rf macOS
-      briefcase package macos dmg --no-sign
+      briefcase package macos --no-sign
 
       echo " ****** Build done *******"
     SHELL
